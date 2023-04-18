@@ -1,3 +1,5 @@
+package model;
+
 public class SubEpic extends Task {
     private int epicId;
 
