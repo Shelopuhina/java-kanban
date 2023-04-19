@@ -2,7 +2,7 @@ package service;
 
 import model.Epic;
 import model.SimpleTask;
-import model.SubEpic;
+import model.SubTask;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,16 +19,16 @@ public class Main {
         taskManager.addEpic(epic1);
 
 
-        SubEpic subEpic1 = new SubEpic("купить учебник", "в буквоеде скидки", 0,"NEW",
+        SubTask subTask1 = new SubTask("купить учебник", "в буквоеде скидки", 0,"NEW",
                 epic1.getId());
-        taskManager.addSubEpic(subEpic1);
-        //System.out.println(subEpic1.getId()+subEpic1.getName()+subEpic1.getDescription()+subEpic1.getStatus());
+        taskManager.addSubTask(subTask1);
+        //System.out.println(subTask1.getId()+subTask1.getName()+subTask1.getDescription()+subTask1.getStatus());
 
 
-        SubEpic subEpic2 = new SubEpic("скачать вопросник", "ссылка на сайте уника", 0,"DONE",
+        SubTask subTask2 = new SubTask("скачать вопросник", "ссылка на сайте уника", 0,"DONE",
                 epic1.getId());
-        taskManager.addSubEpic(subEpic2);
-        //System.out.println(subEpic2.getId()+subEpic2.getName()+subEpic2.getDescription()+subEpic2.getStatus());
+        taskManager.addSubTask(subTask2);
+        //System.out.println(subTask2.getId()+subTask2.getName()+subTask2.getDescription()+subTask2.getStatus());
         System.out.println(epic1.getStatus());
 
         Epic epic2 = new Epic("получить диплом", "через 6 месяцев", 0, "NEW");
@@ -36,55 +36,57 @@ public class Main {
         //System.out.println(epic2.getId()+epic2.getName()+epic2.getDescription()+epic2.getStatus());
         System.out.println(epic2.getStatus());
 
-        SubEpic subEpic3 = new SubEpic("купить прописи", "в буквоеде скидки", 0,"DONE",
+        SubTask subTask3 = new SubTask("купить прописи", "в буквоеде скидки", 0,"DONE",
                 epic2.getId());
-        taskManager.addSubEpic(subEpic3);
-        //System.out.println(subEpic3.getId()+subEpic3.getName()+subEpic3.getDescription()+subEpic3.getStatus()
-        // +subEpic3.getEpicId());
+        taskManager.addSubTask(subTask3);
+        //System.out.println(subTask3.getId()+subTask3.getName()+subTask3.getDescription()+subTask3.getStatus()
+        // +subTask3.getEpicId());
 
         /*System.out.println(taskManager.simpleTask);
         System.out.println(taskManager.epics);
-        System.out.println(taskManager.subEpics);*/
+        System.out.println(taskManager.subTasks);*/
 
         System.out.println(taskManager.getListOfSimpleTasks());
         System.out.println(taskManager.getListOfEpics());
-        System.out.println(taskManager.getListOfSubEpics());
+        System.out.println(taskManager.getListOfsubTasks());
         //System.out.println(taskManager.simpleTask);
 
         //taskManager.getListOfSubsOfEpic(epic1);
 
         /*System.out.println(epic1.getSubsId());
-        taskManager.deleteSubEpicById(subEpic1.getId(),epic1);
+        taskManager.deleteSubTaskById(subTask1.getId(),epic1);
         System.out.println(epic1.getSubsId());
-        System.out.println(taskManager.subEpics);*/
+        System.out.println(taskManager.subTasks);*/
 
         SimpleTask task3 = new SimpleTask("Собрать коробки", "Для переезда", task1.getId(), "DONE");
         taskManager.updateSimpleTask(task3);
         System.out.println(task3.getId()+task3.getName()+task3.getDescription()+task3.getStatus());
 
 
-        SimpleTask task4 = new SimpleTask("Приготовить ужин", "Плов", task2.getId(), "DONE");
+        SimpleTask task4 = new SimpleTask("Приготовить ужин", "Плов", task2.getId(), "NEW");
         taskManager.updateSimpleTask(task4);
         System.out.println(task4.getId()+task4.getName()+task4.getDescription()+task4.getStatus());
 
 
-        SubEpic subEpic5 = new SubEpic("купить учебник", "в буквоеде скидки", subEpic1.getId(), "DONE",
+        SubTask subTask5 = new SubTask("купить учебник", "в буквоеде скидки", subTask1.getId(), "DONE",
                 epic1.getId());
-        taskManager.updateSubEpic(subEpic5);
-        System.out.println(subEpic5.getId()+subEpic5.getName()+subEpic5.getDescription()+subEpic5.getStatus()
-                +subEpic5.getEpicId());
+        taskManager.updateSubTask(subTask5);
+        System.out.println(subTask5.getId()+subTask5.getName()+subTask5.getDescription()+subTask5.getStatus()
+                +subTask5.getEpicId());
 
-        SubEpic subEpic6 = new SubEpic("скачать вопросник", "ссылка на сайте уника", subEpic2.getId(),"NEW",
+        SubTask subTask6 = new SubTask("скачать вопросник", "ссылка на сайте уника", subTask2.getId(),"DONE",
                 epic1.getId());
-        taskManager.updateSubEpic(subEpic6);
-        System.out.println(subEpic6.getId()+subEpic6.getName()+subEpic6.getDescription()+subEpic6.getStatus()
-                +subEpic6.getEpicId());
+        taskManager.updateSubTask(subTask6);
+        System.out.println(subTask6.getId()+subTask6.getName()+subTask6.getDescription()+subTask6.getStatus()
+                +subTask6.getEpicId());
 
-        SubEpic subEpic4 = new SubEpic("заниматься по часу в день", "с 15 до 16", subEpic3.getId(),"NEW",
+        SubTask subTask4 = new SubTask("заниматься по часу в день", "с 15 до 16", subTask3.getId(),"NEW",
                 epic2.getId());
-        taskManager.updateSubEpic(subEpic4);
-        System.out.println(subEpic4.getId()+subEpic4.getName()+subEpic4.getDescription()+subEpic4.getStatus()
-                +subEpic4.getEpicId());
+        taskManager.updateSubTask(subTask4);
+        System.out.println(subTask4.getId()+subTask4.getName()+subTask4.getDescription()+subTask4.getStatus()
+                +subTask4.getEpicId());
+        System.out.println(epic1.getStatus());
+        System.out.println(epic2.getStatus());
 
         Epic epic5 = new Epic("сдать экзамен", "сессия в июне", epic1.getId(), "NEW");
         taskManager.updateEpic(epic5);
@@ -92,29 +94,27 @@ public class Main {
         Epic epic4 = new Epic("получить red диплом", "через 6 месяцев", epic2.getId(), "NEW");
         taskManager.updateEpic(epic4);
 
-        System.out.println(epic5.getStatus());
-        System.out.println(epic4.getStatus());
+
 
         System.out.println(taskManager.getListOfSimpleTasks());
         System.out.println(taskManager.getListOfEpics());
-        System.out.println(taskManager.getListOfSubEpics());
+        System.out.println(taskManager.getListOfsubTasks());
 
-        taskManager.deleteSimpleTaskById(task1.getId());
-        System.out.println(taskManager.getListOfSimpleTasks());
+
 
         System.out.println(taskManager.getListOfSubsOfEpic(epic1));
-        taskManager.deleteAllSubEpics();
+        taskManager.deleteAllSubTasks();
 
         System.out.println(taskManager.getListOfSubsOfEpic(epic1));
         System.out.println(epic5.getStatus());
         System.out.println(epic4.getStatus());
 
         /*System.out.println(taskManager.epics);
-        System.out.println(taskManager.getSubEpicById(subEpic4.getId()).getName());*/
+        System.out.println(taskManager.getSubTaskById(subTask4.getId()).getName());*/
 
         /*System.out.println(taskManager.epics);
         System.out.println(epic4.getSubsId());
-        System.out.println(taskManager.subEpics);*/
+        System.out.println(taskManager.subTasks);*/
 
 
 
