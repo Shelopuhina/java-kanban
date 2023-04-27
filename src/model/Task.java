@@ -1,24 +1,25 @@
 package model;
 
+import service.EpicStatus;
 
 public class Task {
     private String name;
     private String description;
     private int id;
-    private String status;
+    private EpicStatus status;
 
-    public Task(String name, String description, int id, String status) {
+    public Task(String name, String description, int id, EpicStatus status) {
         this.name = name;
         this.description = description;
         this.id = id;
         this.status = status;
     }
 
-    public String getStatus() {
+    public EpicStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(EpicStatus status) {
         this.status = status;
     }
 
