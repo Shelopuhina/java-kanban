@@ -3,11 +3,11 @@ package service;
 import model.Epic;
 import model.SimpleTask;
 import model.SubTask;
+import model.Task;
 
 public class Main {
     public static void main(String[] args) {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
+        TaskManager manager = Managers.getDefault();
 
         SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, EpicStatus.NEW);
         manager.addSimpleTask(task1);
@@ -19,12 +19,10 @@ public class Main {
         Epic epic1 = new Epic("сдать экзамен", "сессия в мае", 0, EpicStatus.NEW);
         manager.addEpic(epic1);
 
-
         SubTask subTask1 = new SubTask("купить учебник", "в буквоеде скидки", 0,EpicStatus.NEW,
                 epic1.getId());
         manager.addSubTask(subTask1);
         //System.out.println(subTask1.getId()+subTask1.getName()+subTask1.getDescription()+subTask1.getStatus());
-
 
         SubTask subTask2 = new SubTask("скачать вопросник", "ссылка на сайте уника", 0,EpicStatus.DONE,
                 epic1.getId());
@@ -47,10 +45,10 @@ public class Main {
         System.out.println(manager.epics);
         System.out.println(manager.subTasks);*/
 
-        System.out.println(manager.getListOfSimpleTasks());
-        System.out.println(manager.getListOfEpics());
-        System.out.println(manager.getListOfsubTasks());
-        //System.out.println(manager.simpleTask);
+        System.out.println( manager.getListOfSimpleTasks());
+        System.out.println( manager.getListOfEpics());
+        System.out.println( manager.getListOfsubTasks());
+        //System.out.println( manager.simpleTask);
 
         //manager.getListOfSubsOfEpic(epic1);
 
@@ -110,15 +108,11 @@ public class Main {
         manager.getTaskById(2);
 
 
-        System.out.println(manager.historyManager.getHistory());
-
-
+        System.out.println(manager.getHistory());
 
         System.out.println(manager.getListOfSimpleTasks());
         System.out.println(manager.getListOfEpics());
         System.out.println(manager.getListOfsubTasks());
-
-
 
         System.out.println(manager.getListOfSubsOfEpic(epic1));
         manager.deleteAllSubTasks();
