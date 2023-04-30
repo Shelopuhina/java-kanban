@@ -18,7 +18,7 @@ public class InMemoryTaskManager implements TaskManager{
     private int nextIdEpic = 1;
     private int nextIdSub = 1;
 
-    HistoryManager managerHistory = Managers.getDefaultHistory();
+   private HistoryManager managerHistory = Managers.getDefaultHistory();
 
     @Override
     public ArrayList<SimpleTask> getListOfSimpleTasks() {
