@@ -5,7 +5,7 @@ import model.Task;
 import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    CustomLinkedList<Task> custom = new CustomLinkedList<>();
+    private CustomLinkedList<Task> custom = new CustomLinkedList<>();
     private Map<Integer, Node<Task>> nodes = new HashMap<>();
     @Override
     public void addTask(Task task) {
@@ -17,37 +17,39 @@ public class InMemoryHistoryManager implements HistoryManager {
             nodes.remove(task.getId());
         }
         custom.linkLast(task);
-        nodes.put(task.getId(), custom.tail);
+        nodes.put(task.getId(), custom.getTail());
     }
     @Override
     public void remove (int id){
         custom.removeNode(nodes.get(id));
+        nodes.remove(id);
     }
     @Override
     public List<Task> getHistory () {
             return custom.getTasks();
         }
     }
-    class CustomLinkedList<Task> {
 
-        public Node<Task> head;
-        public Node<Task> tail;
-        private int size = 0;
-        List<Task> history = new ArrayList<>();
-        public void linkLast(Task task) {
-            final Node<Task> oldTail = tail;
+class CustomLinkedList<Task> { // среда разраб-ки подсказала сделать package-private, просто private не сохранялось, хз почему
+        private Node<Task> head;
+        private Node<Task> tail;
+
+        public Node<Task> getTail() {
+            return tail;
+        }
+
+        protected void linkLast(Task task) {//я не поняла, как могу сделать метод private и потом использовать его в другом классе
+            final Node<Task> oldTail = tail;// а если не создавать отдельный класс для кастомного списка, то как же я его тогда использую?
             final Node<Task> newNode = new Node<>(oldTail, task, null);
             tail = newNode;
             if (oldTail == null) {
                 head = newNode;
             } else {
                 oldTail.next = newNode;
-                newNode.prev = oldTail;
             }
-            size++;
         }
-        public List<Task> getTasks() {
-
+        protected List<Task> getTasks() {
+            List<Task> history = new ArrayList<>();
             Node<Task> node1 = head;
             while (node1 != null) {
                 history.add(node1.data);
@@ -56,10 +58,10 @@ public class InMemoryHistoryManager implements HistoryManager {
             System.out.println(history);
             return history;
         }
-        public void removeNode(Node node1) {
-            if (node1 != null) {
-                Node <Task> nextNode = node1.next;
-                Node <Task> prevNode = node1.prev;
+        protected void removeNode(Node currentNode) {
+            if (currentNode != null) {
+                Node <Task> nextNode = currentNode.next;
+                Node <Task> prevNode = currentNode.prev;
 
                 if (prevNode == null) {
                     head = nextNode;
@@ -71,7 +73,6 @@ public class InMemoryHistoryManager implements HistoryManager {
                 } else {
                     nextNode.prev = prevNode;
                 }
-                size--;
             }
         }
     }

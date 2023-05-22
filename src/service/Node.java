@@ -10,8 +10,8 @@ public Node<Task> prev;
 
 public Node(Node<Task> prev, Task task,Node<Task> next) {
         this.data = task;
-        this.next = null;
-        this.prev = null;
+        this.next = next;
+        this.prev = prev;
         }
         }
 

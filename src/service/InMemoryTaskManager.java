@@ -1,9 +1,6 @@
 package service;
 
-import model.Epic;
-import model.SimpleTask;
-import model.SubTask;
-import model.Task;
+import model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,16 +96,16 @@ public class InMemoryTaskManager implements TaskManager{
         return subTask.getId();
     }
 
-    private EpicStatus updateEpicStatus(Epic epic) {
-        EpicStatus epicStatus = null;
+    private TaskStatus updateEpicStatus(Epic epic) {
+        TaskStatus epicStatus = null;
         int countNew = 0;
         int countDone = 0;
         for (Integer integer : epic.getSubsId()) {
             if (epic.getSubsId().isEmpty()) {
-                epicStatus = EpicStatus.NEW;
+                epicStatus = TaskStatus.NEW;
             } else {
-                boolean isStatusNEW = subTasks.get(integer).getStatus() == EpicStatus.NEW;
-                boolean isStatusDone = subTasks.get(integer).getStatus() == EpicStatus.DONE;
+                boolean isStatusNEW = subTasks.get(integer).getStatus() == TaskStatus.NEW;
+                boolean isStatusDone = subTasks.get(integer).getStatus() == TaskStatus.DONE;
 
                 if (isStatusNEW) {
                     countNew++;
@@ -120,13 +117,13 @@ public class InMemoryTaskManager implements TaskManager{
             }
         }
         if (countNew == epic.getSubsId().size()) {
-            epicStatus = EpicStatus.NEW;
+            epicStatus = TaskStatus.NEW;
             epic.setStatus(epicStatus);
         } else if (countDone == epic.getSubsId().size()) {
-            epicStatus = EpicStatus.DONE;
+            epicStatus = TaskStatus.DONE;
             epic.setStatus(epicStatus);
         } else {
-            epicStatus = EpicStatus.IN_PROGRESS;
+            epicStatus = TaskStatus.IN_PROGRESS;
             epic.setStatus(epicStatus);
         }
         return epic.getStatus();
@@ -140,10 +137,6 @@ public class InMemoryTaskManager implements TaskManager{
 
     @Override
     public void updateEpic(Epic epic) {
-        //int id = epic.getId();
-        //epic.setSubsId(epics.get(id).getSubsId());
-        //epics.remove(epic.getId());
-        // epic.setSubsId(epic.getSubsId());
         epics.put(epic.getId(), epic);
         updateEpicStatus(epic);
     }
