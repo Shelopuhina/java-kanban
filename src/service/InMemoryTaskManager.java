@@ -109,10 +109,8 @@ public class InMemoryTaskManager implements TaskManager{
 
                 if (isStatusNEW) {
                     countNew++;
-                    continue;
                 } else if (isStatusDone) {
                     countDone++;
-                    continue;
                 }
             }
         }
