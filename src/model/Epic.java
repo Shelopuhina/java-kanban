@@ -1,18 +1,21 @@
 package model;
 
 
+import service.TaskType;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class Epic extends Task {
-    private ArrayList<Integer> subsId = new ArrayList<>();
+    private List<Integer> subsId = new ArrayList<>();
 
 
      public Epic(String name, String description, int id) {
-        super(name, description,id, TaskStatus.NEW);
+        super(name, description,id, TaskStatus.NEW, TaskType.EPIC);
 
     }
 
-    public ArrayList<Integer> getSubsId() {
+    public List<Integer> getSubsId() {
         return subsId;
     }
 

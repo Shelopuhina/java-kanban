@@ -6,46 +6,47 @@ import model.SimpleTask;
 import model.SubTask;
 import model.Task;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface TaskManager {
-    List<SimpleTask> getListOfSimpleTasks();
+    List<SimpleTask> getListOfSimpleTasks() throws IOException;
 
 
      List<Epic> getListOfEpics();
 
      List<SubTask> getListOfsubTasks();
 
-     void deleteAllSimpleTasks();
+     void deleteAllSimpleTasks() throws IOException;
 
-     void deleteAllEpics();
+     void deleteAllEpics() throws IOException;
 
-     void deleteAllSubTasks();
+     void deleteAllSubTasks() throws IOException;
 
-     SimpleTask getTaskById(int id);
+     SimpleTask getTaskById(int id) throws IOException;
 
-     Epic getEpicById(int id);
+     Epic getEpicById(int id) throws IOException;
 
-     SubTask getSubTaskById(int id);
+     SubTask getSubTaskById(int id) throws IOException;
 
-     int addSimpleTask(SimpleTask task);
+     int addSimpleTask(SimpleTask task) throws IOException;
 
-     int addEpic(Epic epic);
+     int addEpic(Epic epic) throws IOException;
 
-     int addSubTask(SubTask subTask);
+     int addSubTask(SubTask subTask) throws IOException;
 
-     void updateSimpleTask(SimpleTask task);
+     void updateSimpleTask(SimpleTask task) throws IOException;
 
-     void updateEpic(Epic epic);
+     void updateEpic(Epic epic) throws IOException;
 
-     void updateSubTask(SubTask subTask);
+     void updateSubTask(SubTask subTask) throws IOException;
 
-     void deleteSimpleTaskById(int id);
+     void deleteSimpleTaskById(int id) throws IOException;
 
-     void deleteEpicById(int id) ;
+     void deleteEpicById(int id) throws IOException;
 
-     void deleteSubTaskById(int id);
+     void deleteSubTaskById(int id) throws IOException;
 
      List<SubTask> getListOfSubsOfEpic(Epic epic);
-     List<Task> getHistory();
+     List<Task> getHistory() throws IOException;
 }

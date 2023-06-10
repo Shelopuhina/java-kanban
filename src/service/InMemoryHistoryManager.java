@@ -33,8 +33,8 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
 
-    private static class CustomLinkedList<Task> { //оказывается, кастомный клас не был внутренним, потому у меня ничего
-        private Node<Task> head;                  // не работало, спасибо. Сейчас разобралась ^^
+    private static class CustomLinkedList<Task> {
+        private Node<Task> head;
         private Node<Task> tail;
 
         public Node<Task> getTail() {

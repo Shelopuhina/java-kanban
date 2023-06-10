@@ -1,17 +1,22 @@
 package model;
 
 
+import service.TaskType;
+
 public class Task {
     private String name;
     private String description;
     private int id;
     private TaskStatus status;
+    private TaskType type;
 
-    public Task(String name, String description, int id, TaskStatus status) {
+
+    public Task(String name, String description, int id, TaskStatus status, TaskType type) {
         this.name = name;
         this.description = description;
         this.id = id;
         this.status = status;
+        this.type = type;
     }
 
     public TaskStatus getStatus() {
@@ -46,5 +51,11 @@ public class Task {
         this.id = id;
     }
 
+    public TaskType getType() {
+        return type;
+    }
 
+    public void setType(TaskType type) {
+        this.type = type;
+    }
 }
