@@ -8,7 +8,7 @@ import java.util.List;
 
 
 public class FileBackedTasksManager  extends InMemoryTaskManager implements  TaskManager  {
-    File dataFile;
+    private File dataFile;
 
     public FileBackedTasksManager(File newFile) {
         this.dataFile = newFile;
@@ -16,33 +16,27 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
 
 
     private void save() {
-        try {
-            Writer file = new FileWriter(dataFile.getName());
+        try (Writer file = new FileWriter(dataFile.getName())){
             file.write("id,type,name,status,description,epic\n");
             for (SimpleTask simpleTask : getSimpleTask().values()) {
                 file.write(toString(simpleTask));
-                continue;
             }
             for (Epic epic : getEpics().values()) {
                 file.write(toString(epic));
-                continue;
             }
             for (SubTask subTask : getSubTasks().values()) {
                 file.write(toString(subTask));
             }
             file.write("\n");
             file.write(historyToString(super.getManagerHistory()));
-            file.close();
         } catch (IOException exc) {
             throw new ManagerSaveException("Ошибка сохраенения в файл");
         }
     }
     private static FileBackedTasksManager  loadFromFile(File file) {
         FileBackedTasksManager newFileManager = new FileBackedTasksManager(file);
-        try {
-            FileReader reader = new FileReader(file.getName());
+        try  (FileReader reader = new FileReader(file.getName())) {
             BufferedReader br = new BufferedReader(reader);
-
             List <String> allStrings = new ArrayList<>();
             while (br.ready()) {
                 String line = br.readLine();
@@ -52,6 +46,11 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
                 if(!(allStrings.get(i).isEmpty())) {
                     Task newTask = newFileManager.fromString(allStrings.get(i));
                     String[] split = allStrings.get(i).split(",");
+                    int nextId = 0;
+                    if (Integer.parseInt(split[0]) > nextId ){
+                        nextId = (Integer.parseInt(split[0]))+1;
+                        newFileManager.setNextId(nextId);
+                    }
                     int epicId = 0;
                     if (newTask.getType().equals(TaskType.SUBTASK)) {
                         epicId = Integer.parseInt(split[5]);
@@ -66,6 +65,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
                         SimpleTask simpleTask = new SimpleTask(newTask.getName(), newTask.getDescription(), newTask.getId(), newTask.getStatus());
                         newFileManager.getSimpleTask().put(simpleTask.getId(), simpleTask);
                     }
+
                 }else{
                     String nextString = allStrings.get(i+1);
                     List<Integer> newHistory = historyFromString(nextString);
@@ -82,7 +82,6 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
 
                 }
             }
-            br.close();
         } catch (IOException exc) {
             throw new ManagerSaveException("Ошибка чтения файла");
         }
@@ -91,7 +90,6 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
     private String toString(Task task) {
         String taskToString = null;
         if(task.getType().equals(TaskType.SUBTASK)) {
-
             for (SubTask sub : getSubTasks().values()) {
                 if (task.getId() == sub.getId()) {
                     taskToString = String.join(",", Integer.toString(sub.getId()), sub.getType().toString(), sub.getName(),
@@ -107,7 +105,6 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
     private Task fromString (String taskToString) {
         String[] taskInfo = taskToString.split(",");
         int epicId = 0;
-
         int id = Integer.parseInt(taskInfo[0]);
         String name = (taskInfo[2]);
         String description = (taskInfo[4]);
@@ -249,7 +246,10 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         return forReturn;
     }
 
-
+    @Override
+    public void setNextId(int nextId) {
+        super.setNextId(nextId);
+    }
 
     public static void main(String[] args) throws IOException {
         File newFile = new File("C:\\Users\\T-3000\\dev\\java-kanban\\src\\service", "fileForData.txt");
@@ -317,6 +317,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         System.out.println("История просмотров: " + newFileManager.getHistory());
 
         System.out.println("subtaski: " + newFileManager.getEpicById(3).getSubsId());
+        System.out.println(newFileManager.getNextId());
 
     }
 }
