@@ -42,15 +42,14 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
                 String line = br.readLine();
                 allStrings.add(line);
             }
+            int maxNextId = 0;
             for (int i = 1; i < (allStrings.size()-1); i++) {
                 if(!(allStrings.get(i).isEmpty())) {
                     Task newTask = newFileManager.fromString(allStrings.get(i));
-                    String[] split = allStrings.get(i).split(",");
-                    int nextId = 0;
-                    if (Integer.parseInt(split[0]) > nextId ){
-                        nextId = (Integer.parseInt(split[0]))+1;
-                        newFileManager.setNextId(nextId);
+                    if (newTask.getId() > maxNextId) {
+                        maxNextId = newTask.getId();
                     }
+                    String[] split = allStrings.get(i).split(",");
                     int epicId = 0;
                     if (newTask.getType().equals(TaskType.SUBTASK)) {
                         epicId = Integer.parseInt(split[5]);
@@ -82,6 +81,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
 
                 }
             }
+            newFileManager.nextId = maxNextId + 1;
         } catch (IOException exc) {
             throw new ManagerSaveException("Ошибка чтения файла");
         }
@@ -245,13 +245,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         save();
         return forReturn;
     }
-
-    @Override
-    public void setNextId(int nextId) {
-        super.setNextId(nextId);
-    }
-
-    public static void main(String[] args) throws IOException {
+        public static void main(String[] args) throws IOException {
         File newFile = new File("C:\\Users\\T-3000\\dev\\java-kanban\\src\\service", "fileForData.txt");
         FileBackedTasksManager fileManager = new FileBackedTasksManager(newFile);
         TaskManager manager = Managers.getDefault();
@@ -317,7 +311,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         System.out.println("История просмотров: " + newFileManager.getHistory());
 
         System.out.println("subtaski: " + newFileManager.getEpicById(3).getSubsId());
-        System.out.println(newFileManager.getNextId());
+        System.out.println(newFileManager.nextId);
 
     }
 }
