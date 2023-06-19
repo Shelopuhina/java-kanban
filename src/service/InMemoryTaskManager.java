@@ -12,6 +12,11 @@ public class InMemoryTaskManager implements TaskManager{
     private Map<Integer, SimpleTask> simpleTask = new HashMap<>();
     private Map<Integer, Epic> epics = new HashMap<>();
     private Map<Integer, SubTask> subTasks = new HashMap<>();
+
+    public int getNextId() {
+        return nextId;
+    }
+
     protected int nextId = 1;
     private HistoryManager managerHistory = Managers.getDefaultHistory();
 
@@ -20,7 +25,7 @@ public class InMemoryTaskManager implements TaskManager{
     }
 
     @Override
-    public List<SimpleTask> getListOfSimpleTasks() throws IOException {
+    public List<SimpleTask> getListOfSimpleTasks() {
         return new ArrayList<>(simpleTask.values());
     }
 
@@ -112,24 +117,31 @@ public class InMemoryTaskManager implements TaskManager{
         return subTask.getId();
     }
 
-    private TaskStatus updateEpicStatus(Epic epic) {
+    public TaskStatus updateEpicStatus(Epic epic) {
         TaskStatus epicStatus = null;
         int countNew = 0;
         int countDone = 0;
+
         for (Integer integer : epic.getSubsId()) {
             if (epic.getSubsId().isEmpty()) {
                 epicStatus = TaskStatus.NEW;
             } else {
                 boolean isStatusNEW = subTasks.get(integer).getStatus() == TaskStatus.NEW;
                 boolean isStatusDone = subTasks.get(integer).getStatus() == TaskStatus.DONE;
+                boolean isStatusInProgress = subTasks.get(integer).getStatus() == TaskStatus.IN_PROGRESS;
+
 
                 if (isStatusNEW) {
                     countNew++;
                 } else if (isStatusDone) {
                     countDone++;
+                } else if(isStatusInProgress) {
+                    epic.setStatus(TaskStatus.IN_PROGRESS);
+                    epicStatus = TaskStatus.IN_PROGRESS;
                 }
             }
         }
+
         if (countNew == epic.getSubsId().size()) {
             epicStatus = TaskStatus.NEW;
             epic.setStatus(epicStatus);

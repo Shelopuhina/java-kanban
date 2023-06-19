@@ -22,4 +22,5 @@ public class Epic extends Task {
     public void setSubsId(ArrayList<Integer> subsId) {
          this.subsId = subsId;
     }
+
 }
