@@ -5,8 +5,11 @@ import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.io.TempDir;
 import service.*;
 import java.io.*;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -14,21 +17,21 @@ import java.util.ArrayList;
 
 
 public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksManager> {
-
-    private static File testFile;
-private FileBackedTasksManager fileManager;
+    @TempDir
+    Path tempDir;
+    File testFile;  // в тестах с модификаторами доступа допустимо не заморачиваться
+    private FileBackedTasksManager fileManager;
     @BeforeEach
      void beforeEach() throws IOException {
-       testFile = new File("C:\\Users\\T-3000\\dev\\java-kanban\\src\\service", "fileForTest.txt");
-        taskManager = new FileBackedTasksManager(testFile);
-    }
-    @AfterEach
-    void afterEach() {
         try {
-            testFile.delete();
-        } catch (Exception ex) {
-            ex.getMessage();
+            testFile = tempDir.resolve("fileForTest.txt").toFile();
         }
+        catch(InvalidPathException ipe) {
+            System.err.println(
+                    "error creating temporary test file in " +
+                            this.getClass().getSimpleName() );
+        }
+        taskManager = new FileBackedTasksManager(testFile);
     }
 
     @Test
