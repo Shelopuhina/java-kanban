@@ -323,8 +323,9 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         fileManager.getSubTaskById(5);
         fileManager.getTaskById(2);
 
-
+            fileManager.deleteAllSimpleTasks();
         System.out.println("История просмотров: " + fileManager.getHistory());
+        System.out.println("Сортированный лист: " + fileManager.getPrioritizedTasks());
 
         FileReader reader = new FileReader(newFile.getName());
         BufferedReader br = new BufferedReader(reader);
@@ -339,9 +340,12 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         newFileManager.getEpicById(3);
         newFileManager.getEpicById(7);
         newFileManager.getTaskById(1);
+
         System.out.println("История просмотров: " + newFileManager.getHistory());
 
-        System.out.println("subtaski: " + newFileManager.getEpicById(3).getSubsId());
+
+
+      // System.out.println("subtaski: " + newFileManager.getEpicById(3).getSubsId());
         System.out.println(newFileManager.nextId);
 
     }

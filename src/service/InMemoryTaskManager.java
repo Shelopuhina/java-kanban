@@ -7,25 +7,24 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
-    private Map<Integer, SimpleTask> simpleTask = new HashMap<>();
-    private Map<Integer, Epic> epics = new HashMap<>();
-    private Map<Integer, SubTask> subTasks = new HashMap<>();
-    private Set<Task> prioritizedTasks = new TreeSet<Task>(this::compare);
-
+public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
+    final private Map<Integer, SimpleTask> simpleTask = new HashMap<>();
+    final private Map<Integer, Epic> epics = new HashMap<>();
+    final private Map<Integer, SubTask> subTasks = new HashMap<>();                //пробовала вставить лямбду самыми разными методами, но ничего не вышло:(
+    final private Set<Task> prioritizedTasks = new TreeSet<Task>(this ::compare);//(task1,task2) -> task1.getStartTime().compareTo(task2.getStartTime())
+    protected int nextId = 1;                                       // Comparator.comparing(Task::task.getStartTime());
+    final private HistoryManager managerHistory = Managers.getDefaultHistory();
+    //Comparator<Task> byStartTime = (task1,task2) -> (task1.getStartTime().compareTo(task2.getStartTime()));
 
     @Override
     public int compare(Task task1, Task task2) {
         return task1.getStartTime().compareTo(task2.getStartTime());
-}
 
+}
 
     public int getNextId() {
         return nextId;
     }
-
-    protected int nextId = 1;
-    private HistoryManager managerHistory = Managers.getDefaultHistory();
 
     public HistoryManager getManagerHistory() {
         return managerHistory;
@@ -61,12 +60,28 @@ public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
     @Override
     public void deleteAllSimpleTasks() throws IOException {
         simpleTask.clear();
+        List<Task> priorTasks = new ArrayList<>(prioritizedTasks);
+        for (Task prioritizedTask : priorTasks) {
+            if(prioritizedTask.getType().equals(TaskType.SIMPLE_TASK)) {
+                prioritizedTasks.remove(prioritizedTask);
+            }
+        }
+        for (Task task : managerHistory.getHistory()) {
+            if(task.getType().equals(TaskType.SIMPLE_TASK)) {
+                managerHistory.remove(task.getId());
+            }
+        }
     }
 
     @Override
     public void deleteAllEpics() throws IOException {
         epics.clear();
         subTasks.clear();
+        for (Task task : managerHistory.getHistory()) {//эпики мы вроде в сортированный списко по заданию не кладем, так что и не удаляю..
+            if (task.getType().equals(TaskType.EPIC)) {
+                managerHistory.remove(task.getId());
+            }
+        }
     }
 
     @Override
@@ -78,6 +93,17 @@ public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
             setEpicDuration(epic);
         }
         subTasks.clear();
+        List<Task> priorTasks = new ArrayList<>(prioritizedTasks);
+        for (Task prioritizedTask : priorTasks) {
+            if (prioritizedTask.getType().equals(TaskType.SUBTASK)) {
+                prioritizedTasks.remove(prioritizedTask);
+            }
+        }
+        for (Task task : managerHistory.getHistory()) {
+            if (task.getType().equals(TaskType.SUBTASK)) {
+                managerHistory.remove(task.getId());
+            }
+        }
     }
 
     @Override
@@ -103,8 +129,8 @@ public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
         task.setId(nextId);
         nextId++;
         simpleTask.put(task.getId(), task);
-        prioritizedTasks.add(task);
         findIfIsIntersection();
+        prioritizedTasks.add(task);
         return task.getId();
     }
 
@@ -125,8 +151,9 @@ public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
         epics.get(epId).getSubsId().add(subTask.getId());
         updateEpicStatus(epics.get(epId));
         setEpicDuration(epics.get(epId));
-        prioritizedTasks.add(subTask);
         findIfIsIntersection();
+        prioritizedTasks.add(subTask);
+
 
         return subTask.getId();
     }
@@ -194,8 +221,9 @@ public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
     public void updateSimpleTask(SimpleTask task) throws IOException {
         simpleTask.remove(task.getId());
         simpleTask.put(task.getId(), task);
-        prioritizedTasks.add(task);
         findIfIsIntersection();
+        prioritizedTasks.add(task);
+
     }
 
     @Override
@@ -211,8 +239,9 @@ public class InMemoryTaskManager implements TaskManager,Comparator<Task>{
         Epic epicTask = epics.get(subTask.getEpicId());
         updateEpicStatus(epicTask);
         setEpicDuration(epicTask);
-        prioritizedTasks.add(subTask);
         findIfIsIntersection();
+        prioritizedTasks.add(subTask);
+
     }
 
     @Override
