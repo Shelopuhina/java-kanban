@@ -1,5 +1,3 @@
-package Tests;
-
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,8 +63,8 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         Assertions.assertAll("Проверка добавления сабтаска: ", //() -> assertEquals("Вашингтон", address.getCity()),
                 () -> assertNotNull(taskManager.getSubTaskById(2), "Сабтаск не найден."),
                 () -> Assertions.assertEquals(2, result),
-                () -> Assertions.assertEquals(subTaskMap, taskManager.getSubTasks(), "Сабтаск не записан в мапу."),
-                () -> Assertions.assertEquals(3, taskManager.getNextId(), "Некорректное значение счетчика id."),
+                () -> assertEquals(subTaskMap, taskManager.getSubTasks(), "Сабтаск не записан в мапу."),
+                () -> assertEquals(3, taskManager.getNextId(), "Некорректное значение счетчика id."),
                 () -> Assertions.assertEquals(expected, epic3.getSubsId(), "Сабтаск не записан в поле эпика"),//проверка списка айдишников в поле эпика
                 () -> Assertions.assertEquals(TaskStatus.IN_PROGRESS, epic3.getStatus(), "Статус эпика после добавления сабтаска не обновился"));//проверка обновления статуса
     }
@@ -75,7 +73,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
     public void testUpdateEpicStatusNullSubTask() throws IOException {
         Epic epic1 = new Epic("name1", "description1", 0);
         taskManager.addEpic(epic1);
-        Assertions.assertEquals(TaskStatus.NEW, taskManager.updateEpicStatus(epic1));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
+        assertEquals(TaskStatus.NEW, taskManager.updateEpicStatus(epic1));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
     }
 
     @Test
@@ -87,7 +85,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         taskManager.addSubTask(sub3);
         taskManager.addSubTask(sub4);
 
-        Assertions.assertEquals(TaskStatus.NEW, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать);
+        assertEquals(TaskStatus.NEW, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать);
     }
 
     @Test
@@ -99,7 +97,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         taskManager.addSubTask(sub3);
         taskManager.addSubTask(sub4);
 
-        Assertions.assertEquals(TaskStatus.DONE, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
+        assertEquals(TaskStatus.DONE, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
     }
 
     @Test
@@ -111,7 +109,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         taskManager.addSubTask(sub3);
         taskManager.addSubTask(sub4);
 
-        Assertions.assertEquals(TaskStatus.IN_PROGRESS, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
+        assertEquals(TaskStatus.IN_PROGRESS, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
     }
 
     @Test
@@ -123,7 +121,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
         taskManager.addSubTask(sub3);
         taskManager.addSubTask(sub4);
 
-        Assertions.assertEquals(TaskStatus.IN_PROGRESS, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
+        assertEquals(TaskStatus.IN_PROGRESS, taskManager.updateEpicStatus(epic3));//пришлось сделать метод updateEpicStatus() публичным, иначе хз, как его вызвать
     }
     @Test
     public void testGetEpicStartEndTime() throws IOException {

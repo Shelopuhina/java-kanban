@@ -1,5 +1,3 @@
-package Tests;
-
 import model.Epic;
 import model.SubTask;
 import model.Task;
