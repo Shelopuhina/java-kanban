@@ -76,7 +76,7 @@ protected T taskManager;
         taskManager.addSimpleTask(task2);
         taskManager.deleteAllSimpleTasks();
 
-        assertEquals(new ArrayList<>(), taskManager.getListOfSimpleTasks(), "Произошел сбой удаления задач.");
+         assertEquals(new ArrayList<>(), taskManager.getListOfSimpleTasks(), "Произошел сбой удаления задач.");
     };
 
     @Test

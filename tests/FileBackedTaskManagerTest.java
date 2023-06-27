@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksManager> {
     @TempDir
     Path tempDir;
-    File testFile;  // в тестах с модификаторами доступа допустимо не заморачиваться
+    File testFile;
     private FileBackedTasksManager fileManager;
     @BeforeEach
      void beforeEach() throws IOException {

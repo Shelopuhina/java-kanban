@@ -7,20 +7,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
+public class InMemoryTaskManager implements TaskManager{
     final private Map<Integer, SimpleTask> simpleTask = new HashMap<>();
     final private Map<Integer, Epic> epics = new HashMap<>();
-    final private Map<Integer, SubTask> subTasks = new HashMap<>();                //пробовала вставить лямбду самыми разными методами, но ничего не вышло:(
-    final private Set<Task> prioritizedTasks = new TreeSet<Task>(this ::compare);//(task1,task2) -> task1.getStartTime().compareTo(task2.getStartTime())
+    final private Map<Integer, SubTask> subTasks = new HashMap<>();
+    final private Set<Task> prioritizedTasks = new TreeSet<>((task1,task2) -> task1.getStartTime().compareTo(task2.getStartTime()));
     protected int nextId = 1;                                       // Comparator.comparing(Task::task.getStartTime());
     final private HistoryManager managerHistory = Managers.getDefaultHistory();
     //Comparator<Task> byStartTime = (task1,task2) -> (task1.getStartTime().compareTo(task2.getStartTime()));
 
-    @Override
-    public int compare(Task task1, Task task2) {
-        return task1.getStartTime().compareTo(task2.getStartTime());
-
-}
 
     public int getNextId() {
         return nextId;
@@ -126,10 +121,10 @@ public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
 
     @Override
     public int addSimpleTask(SimpleTask task) throws IOException {
+        findIfIsIntersection();
         task.setId(nextId);
         nextId++;
         simpleTask.put(task.getId(), task);
-        findIfIsIntersection();
         prioritizedTasks.add(task);
         return task.getId();
     }
@@ -144,6 +139,7 @@ public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
 
     @Override
     public int addSubTask(SubTask subTask) throws IOException {
+        findIfIsIntersection();
         subTask.setId(nextId);
         nextId++;
         subTasks.put(subTask.getId(), subTask);
@@ -151,7 +147,7 @@ public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
         epics.get(epId).getSubsId().add(subTask.getId());
         updateEpicStatus(epics.get(epId));
         setEpicDuration(epics.get(epId));
-        findIfIsIntersection();
+
         prioritizedTasks.add(subTask);
 
 
@@ -219,9 +215,9 @@ public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
 
     @Override
     public void updateSimpleTask(SimpleTask task) throws IOException {
+        findIfIsIntersection();
         simpleTask.remove(task.getId());
         simpleTask.put(task.getId(), task);
-        findIfIsIntersection();
         prioritizedTasks.add(task);
 
     }
@@ -235,11 +231,11 @@ public class InMemoryTaskManager implements TaskManager, Comparator<Task>{
 
     @Override
     public void updateSubTask(SubTask subTask) throws IOException {
+        findIfIsIntersection();
         subTasks.put(subTask.getId(), subTask);
         Epic epicTask = epics.get(subTask.getEpicId());
         updateEpicStatus(epicTask);
         setEpicDuration(epicTask);
-        findIfIsIntersection();
         prioritizedTasks.add(subTask);
 
     }
