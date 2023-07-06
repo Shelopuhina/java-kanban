@@ -1,4 +1,4 @@
-package service;
+package model.enums;
 
 public enum TaskType {
     SIMPLE_TASK,

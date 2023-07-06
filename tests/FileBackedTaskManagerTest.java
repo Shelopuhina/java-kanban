@@ -1,6 +1,6 @@
 import model.Epic;
 import model.SimpleTask;
-import model.TaskStatus;
+import model.enums.TaskStatus;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

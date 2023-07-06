@@ -1,6 +1,9 @@
 package service;
 
+import Exceptions.ManagerSaveException;
 import model.*;
+import model.enums.TaskStatus;
+import model.enums.TaskType;
 
 import java.io.*;
 import java.time.Instant;
@@ -9,15 +12,13 @@ import java.util.List;
 
 
 public class FileBackedTasksManager  extends InMemoryTaskManager implements  TaskManager  {
-    private File dataFile;
-
-    public FileBackedTasksManager(File newFile) {
-        this.dataFile = newFile;
-    }
+    private static File newFile = new File("C:\\Users\\T-3000\\dev\\java-kanban\\src\\service", "fileForData.txt");
 
 
-    private void save() {
-        try (Writer file = new FileWriter(dataFile.getName())){
+
+
+    protected void save() {
+        try (Writer file = new FileWriter(newFile.getName())){
             file.write("id,type,name,status,description,duration,startTime,endTime,epic\n");
             for (SimpleTask simpleTask : getSimpleTask().values()) {
                 file.write(toString(simpleTask));
@@ -35,7 +36,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         }
     }
     public FileBackedTasksManager  loadFromFile(File file) {
-        FileBackedTasksManager newFileManager = new FileBackedTasksManager(file);
+        FileBackedTasksManager newFileManager = new FileBackedTasksManager();
         try  (FileReader reader = new FileReader(file.getName())) {
             BufferedReader br = new BufferedReader(reader);
             List <String> allStrings = new ArrayList<>();
@@ -277,8 +278,8 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         return forReturn;
     }
         public static void main(String[] args) throws IOException {
-        File newFile = new File("C:\\Users\\T-3000\\dev\\java-kanban\\src\\service", "fileForData.txt");
-        FileBackedTasksManager fileManager = new FileBackedTasksManager(newFile);
+
+        FileBackedTasksManager fileManager = Managers.getDefaultFileBackedManager();
         TaskManager manager = Managers.getDefault();
 
         SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100, Instant.ofEpochSecond(1000));
@@ -323,7 +324,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         fileManager.getSubTaskById(5);
         fileManager.getTaskById(2);
 
-            fileManager.deleteAllSimpleTasks();
+
         System.out.println("История просмотров: " + fileManager.getHistory());
         System.out.println("Сортированный лист: " + fileManager.getPrioritizedTasks());
 
@@ -347,6 +348,8 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
 
       // System.out.println("subtaski: " + newFileManager.getEpicById(3).getSubsId());
         System.out.println(newFileManager.nextId);
+
+
 
     }
 }

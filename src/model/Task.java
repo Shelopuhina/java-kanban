@@ -1,11 +1,10 @@
 package model;
 
 
-import service.TaskType;
+import model.enums.TaskStatus;
+import model.enums.TaskType;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 
 public class Task {
     private String name;

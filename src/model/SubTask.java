@@ -1,16 +1,15 @@
 package model;
 
 
-import service.TaskType;
+import model.enums.TaskStatus;
+import model.enums.TaskType;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 
 public class SubTask extends Task {
     private int epicId;
 
-    public SubTask(String name, String description, int id, TaskStatus status, long duration, Instant startTime,int epicId) {
+    public SubTask(String name, String description, int id, TaskStatus status, long duration, Instant startTime, int epicId) {
         super(name, description, id, status, TaskType.SUBTASK, duration, startTime);
         this.epicId = epicId;
     }

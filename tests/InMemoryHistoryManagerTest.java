@@ -1,13 +1,12 @@
 import model.Epic;
 import model.SubTask;
 import model.Task;
-import model.TaskStatus;
-import org.junit.jupiter.api.Assertions;
+import model.enums.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.HistoryManager;
 import service.InMemoryHistoryManager;
-import service.TaskType;
+import model.enums.TaskType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

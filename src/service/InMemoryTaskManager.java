@@ -1,6 +1,9 @@
 package service;
 
+import Exceptions.TasksIntersectionException;
 import model.*;
+import model.enums.TaskStatus;
+import model.enums.TaskType;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -15,7 +18,6 @@ public class InMemoryTaskManager implements TaskManager{
     protected int nextId = 1;                                       // Comparator.comparing(Task::task.getStartTime());
     final private HistoryManager managerHistory = Managers.getDefaultHistory();
     //Comparator<Task> byStartTime = (task1,task2) -> (task1.getStartTime().compareTo(task2.getStartTime()));
-
 
     public int getNextId() {
         return nextId;
@@ -282,7 +284,7 @@ public class InMemoryTaskManager implements TaskManager{
         return managerHistory.getHistory();
     }
 
-    @Override
+
     public void  findIfIsIntersection() throws IOException{
         for (int i = 1; i < prioritizedTasks.size(); i++) {
             Task task = getPrioritizedTasks().get(i);

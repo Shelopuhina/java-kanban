@@ -1,10 +1,10 @@
 package model;
 
 
-import service.TaskType;
+import model.enums.TaskStatus;
+import model.enums.TaskType;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

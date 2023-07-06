@@ -49,6 +49,5 @@ public interface TaskManager {
 
      List<SubTask> getListOfSubsOfEpic(Epic epic);
      List<Task> getHistory() throws IOException;
-     void findIfIsIntersection() throws IOException;
      List<Task> getPrioritizedTasks() throws IOException;
 }
