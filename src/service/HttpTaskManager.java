@@ -41,7 +41,7 @@ public class HttpTaskManager extends FileBackedTasksManager{
         client.put("tasks/history", history);
     }
 
-    protected void load() throws IOException {
+    public void load() throws IOException {
         String jsonTasks = getClient().load("tasks/task");
         Type taskType = new TypeToken<Map<Integer, SimpleTask>>(){}.getType();
         Map<Integer, SimpleTask> tasks = gson.fromJson(jsonTasks, taskType);

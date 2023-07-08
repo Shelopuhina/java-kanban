@@ -41,7 +41,7 @@ public class KVTaskClient {
     }
     protected void put(String key, String json) {
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8078/" + key + "?API_TOKEN=" + token);
+        URI url = URI.create("http://localhost:8078/save/" + key + "?API_TOKEN=" + token);
         HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json, DEFAULT_CHARSET);
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
         try {
@@ -53,14 +53,14 @@ public class KVTaskClient {
 
     protected String load(String key){
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8078/" + key + "?API_TOKEN=" + token);
+        URI url = URI.create("http://localhost:8078/load/" + key + "?API_TOKEN=" + token);
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = null;
         try {
-            client.send(request, HttpResponse.BodyHandlers.ofString());
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
         }catch (InterruptedException | IOException exc){
             System.out.println("Не удалось восстановить состояние менеджера: " + exc.getMessage());
         }
-        return response != null ? response.body() : "KVTaskClient.load() is greeting you";
+        return response != null ? response.body() : "load()";
     }
 }

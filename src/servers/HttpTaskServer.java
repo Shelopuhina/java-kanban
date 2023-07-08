@@ -75,6 +75,7 @@ public class HttpTaskServer {
             path = requestURI.getPath();
             System.out.println("Путь: " + path);
             String[] splitStrings = path.split("/");
+            System.out.println(splitStrings.length);
 
 
            try {
@@ -131,10 +132,10 @@ public class HttpTaskServer {
                        break;
                    }
                    case "DELETE": {
-                       if (splitStrings.length>3  && (requestURI.getQuery().contains("id"))) {
+                       if (splitStrings.length >= 3  && (requestURI.getQuery().contains("id"))) {
                            deleteAnyTaskById();
                        }
-                       if (splitStrings[2].equals("task") && path.endsWith("task")) {
+                       if (splitStrings[2].equals("task") && (!requestURI.getQuery().contains("id"))) {
                            deleteAllSimpleTasks();
                        }
                        if (splitStrings[2].equals("epic") && path.endsWith("epic")) {
@@ -396,7 +397,6 @@ public class HttpTaskServer {
             manager.deleteAllSimpleTasks();
 
             if (manager.getSimpleTask().isEmpty()) {
-                response = "Все задачи удалены.".getBytes(DEFAULT_CHARSET);
                 responseCode = 200;
             }else{
                 responseCode = 400;
@@ -412,7 +412,6 @@ public class HttpTaskServer {
             manager.deleteAllEpics();
 
             if (manager.getEpics().isEmpty()) {
-                response = "Все эпики удалены.".getBytes(DEFAULT_CHARSET);
                 responseCode = 200;
             }else{
                 responseCode = 400;
@@ -428,7 +427,6 @@ public class HttpTaskServer {
             manager.deleteAllSubTasks();
 
             if (manager.getSubTasks().isEmpty()) {
-                response = "Все сабтаски удалены.".getBytes(DEFAULT_CHARSET);
                 responseCode = 200;
             }else{
                 responseCode = 400;
@@ -489,6 +487,6 @@ public class HttpTaskServer {
         manager.addSubTask(subTask1);
         manager.getTaskById(task1.getId());
         manager.getSubTaskById(subTask1.getId());
-        taskServer.stop();
+
     }
     }

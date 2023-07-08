@@ -1,14 +1,14 @@
 package servers;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class KVServer {
@@ -111,6 +111,10 @@ public class KVServer {
         System.out.println("Открой в браузере http://localhost:" + PORT + "/");
         System.out.println("API_TOKEN: " + apiToken);
         server.start();
+    }
+    public void stop() {
+        server.stop(0);
+        System.out.println("Остановили сервер на порту: "+PORT);
     }
 
     private String generateApiToken() {

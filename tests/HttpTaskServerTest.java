@@ -21,6 +21,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -159,6 +160,138 @@ public class HttpTaskServerTest {
 
         Assertions.assertAll("Проверка получения задачи по id: ",
                 () -> assertEquals(200, response.statusCode()),
-                () -> assertNotNull(obj, "Задача не возвращается."));
+                () -> assertNotNull(obj, "Задача не возвращается."),
+                () -> assertEquals(task.getName(),obj.getName()),
+                () -> assertEquals(task.getEndTime(),obj.getEndTime()));//почему то не смогла сравнить объекты, атк что сравниваю поля..
+    }
+    @Test
+    public void getEpicByIdTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/epic/?id=2");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Type EpicType = new TypeToken<Epic>() {}.getType();
+        Epic obj = gson.fromJson(response.body(),EpicType );
+
+        Assertions.assertAll("Проверка получения эпика по id: ",
+                () -> assertEquals(200, response.statusCode()),
+                () -> assertNotNull(obj, "Эпик не возвращается."),
+                () -> assertEquals(epic.getName(),obj.getName()),
+                () -> assertEquals(epic.getEndTime(),obj.getEndTime()));//почему то не смогла сравнить объекты, атк что сравниваю поля..
+    }
+    @Test
+    public void getSubtaskByIdTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/subtask/?id=3");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Type subType = new TypeToken<SubTask>() {}.getType();
+        SubTask obj = gson.fromJson(response.body(),subType );
+
+        Assertions.assertAll("Проверка получения сабтаска по id: ",
+                () -> assertEquals(200, response.statusCode()),
+                () -> assertNotNull(obj, "Сабтаск не возвращается."),
+                () -> assertEquals(subtask.getName(),obj.getName()),
+                () -> assertEquals(subtask.getEndTime(),obj.getEndTime()));//почему то не смогла сравнить объекты, атк что сравниваю поля..
+    }
+    @Test
+    public void postHandleSimpleTaskTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/task");
+        String json = gson.toJson(task);
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
+        HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+         assertEquals(200, response.statusCode());
+    }
+    @Test
+    public void postHandleEpicTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/epic");
+        String json = gson.toJson(epic);
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
+        HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+    }
+    @Test
+    public void postHandleSubtaskTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/subtask");
+        String json = gson.toJson(subtask);
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
+        HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+    }
+    @Test
+    public void deleteSimpleTasksTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/task");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        Type type = new TypeToken<Map<Integer, SimpleTask>>(){}.getType();
+        Map<Integer, SimpleTask> tasks = gson.fromJson(response.body(), type);
+        assertNull(tasks);
+    }
+    @Test
+    public void deleteEpicsTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/epic");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        Type type = new TypeToken<Map<Integer, SubTask>>(){}.getType();
+        Map<Integer, SubTask> tasks = gson.fromJson(response.body(), type);
+        assertNull(tasks);
+    }
+    @Test
+    public void deleteSubtasksTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/subtask");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        Type type = new TypeToken<Map<Integer, SubTask>>(){}.getType();
+        Map<Integer, SubTask> tasks = gson.fromJson(response.body(), type);
+        assertNull(tasks);
+    }
+    @Test
+    public void deleteSimpleTaskByIdTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/task/?id=1");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+
+    }
+    @Test
+    public void deleteEpicByIdTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/task/?id=2");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+    }
+    @Test
+    public void deleteSubTaskByIdTest() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks/task/?id=3");
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+
     }
 }
