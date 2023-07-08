@@ -10,8 +10,8 @@ import utils.Managers;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class HttpTaskManager extends FileBackedTasksManager{
    protected KVTaskClient client;
@@ -30,8 +30,8 @@ public class HttpTaskManager extends FileBackedTasksManager{
     protected void save() throws IOException {
         String tasks = gson.toJson(getSimpleTask());
         client.put("tasks/task", tasks);
-        Map<Integer,Epic> epic = getEpics();
-        String epics = gson.toJson(epic);
+
+        String epics = gson.toJson(getEpics());
         client.put("tasks/epic", epics);
         String subtasks = gson.toJson(getSubTasks());
         client.put("tasks/subtask", subtasks);

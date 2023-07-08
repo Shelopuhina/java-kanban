@@ -45,6 +45,14 @@ public class HttpTaskServer {
         httpServer.bind(new InetSocketAddress(PORT), 0);
         httpServer.createContext("/tasks", new TasksHandler());
     }
+    public HttpTaskServer(TaskManager manager) throws IOException {
+        this.manager = manager;
+        this.httpServer = HttpServer.create();
+        this.gson = Managers.getGson();
+
+        httpServer.bind(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/tasks", new TasksHandler());
+    }
 
     public void start() {
         System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
@@ -65,7 +73,7 @@ public class HttpTaskServer {
             String method = exchange.getRequestMethod();
             requestURI = exchange.getRequestURI();
             path = requestURI.getPath();
-            System.out.println("Путь ебучий" + path);
+            System.out.println("Путь: " + path);
             String[] splitStrings = path.split("/");
 
 
@@ -274,8 +282,6 @@ public class HttpTaskServer {
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
             int id = Integer.parseInt(getId.substring(index+1));
-            System.out.println(id);
-            System.out.println("info"+id);
             System.out.println("Началась обработка /tasks/subtask/epic/?id="+id+"запроса от клиента.");
 
             HttpClient client = HttpClient.newHttpClient();
@@ -466,17 +472,16 @@ public class HttpTaskServer {
 
     public static void main(String[] args) throws IOException {
 
-
         HttpTaskServer taskServer = new HttpTaskServer();
         taskServer.start();
 
-        SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100, Instant.ofEpochSecond(1000));
+       SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100, Instant.ofEpochSecond(1000));
         manager.addSimpleTask(task1);
         SimpleTask task2 = new SimpleTask("Собрать коробки2", "Для переезда2", 0, TaskStatus.DONE,100, Instant.ofEpochSecond(80000));
         manager.addSimpleTask(task2);
 
 
-        Epic epic1 = new Epic("сдать экзамен", "сессия в мае ");
+        Epic epic1 = new Epic("сдать экзамен", "сессия в мае ",0);
         manager.addEpic(epic1);
 
         SubTask subTask1 = new SubTask("купить учебник", " в буквоеде скидки ", 0, TaskStatus.NEW,

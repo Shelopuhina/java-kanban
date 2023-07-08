@@ -10,7 +10,12 @@ public class InstantAdapter extends TypeAdapter<Instant>{
 
     @Override
     public void write(JsonWriter jsonWriter, Instant instant) throws IOException {
-        jsonWriter.value(instant.toEpochMilli());
+       if(instant==null) {
+           jsonWriter.nullValue();
+       }else{
+           jsonWriter.value(instant.toEpochMilli());
+
+       }
     }
 
     @Override

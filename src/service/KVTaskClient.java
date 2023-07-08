@@ -41,19 +41,19 @@ public class KVTaskClient {
     }
     protected void put(String key, String json) {
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8078/put/" + key + "?API_TOKEN=" + token);
+        URI url = URI.create("http://localhost:8078/" + key + "?API_TOKEN=" + token);
         HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json, DEFAULT_CHARSET);
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
         try {
             client.send(request, HttpResponse.BodyHandlers.ofString());
         }catch (InterruptedException | IOException exc){
-            System.out.println("Не удалось сохранить состояние менеджера: " + exc.getMessage());
+            System.out.println("Не удалось сохранить состояние менеджера: " + exc.getMessage()+key);
         }
     }
 
     protected String load(String key){
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8078/put/" + key + "?API_TOKEN=" + token);
+        URI url = URI.create("http://localhost:8078/" + key + "?API_TOKEN=" + token);
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = null;
         try {
