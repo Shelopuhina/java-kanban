@@ -4,6 +4,7 @@ import Exceptions.ManagerSaveException;
 import model.*;
 import model.enums.TaskStatus;
 import model.enums.TaskType;
+import servers.KVServer;
 
 import java.io.*;
 import java.time.Instant;
@@ -17,7 +18,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
 
 
 
-    protected void save() {
+    protected void save() throws IOException {
         try (Writer file = new FileWriter(newFile.getName())){
             file.write("id,type,name,status,description,duration,startTime,endTime,epic\n");
             for (SimpleTask simpleTask : getSimpleTask().values()) {
@@ -36,7 +37,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         }
     }
     public FileBackedTasksManager  loadFromFile(File file) {
-        FileBackedTasksManager newFileManager = new FileBackedTasksManager();
+        FileBackedTasksManager newmanager = new FileBackedTasksManager();
         try  (FileReader reader = new FileReader(file.getName())) {
             BufferedReader br = new BufferedReader(reader);
             List <String> allStrings = new ArrayList<>();
@@ -47,7 +48,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
             int maxNextId = 0;
             for (int i = 1; i < (allStrings.size()-1); i++) {
                 if(!(allStrings.get(i).isEmpty())) {
-                    Task newTask = newFileManager.fromString(allStrings.get(i));
+                    Task newTask = newmanager.fromString(allStrings.get(i));
                     if (newTask.getId() > maxNextId) {
                         maxNextId = newTask.getId();
                     }
@@ -57,16 +58,16 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
                         epicId = Integer.parseInt(split[8]);
                         SubTask subTask = new SubTask(newTask.getName(), newTask.getDescription(), newTask.getId(),
                                 newTask.getStatus(),newTask.getDuration(),newTask.getStartTime(),epicId);
-                        newFileManager.getSubTasks().put(subTask.getId(), subTask);
-                        List<Integer> subsId = newFileManager.getEpicById(epicId).getSubsId();
+                        newmanager.getSubTasks().put(subTask.getId(), subTask);
+                        List<Integer> subsId = newmanager.getEpicById(epicId).getSubsId();
                         subsId.add(newTask.getId());
                     } else if (newTask.getType().equals(TaskType.EPIC)) {
                         Epic epic = new Epic(newTask.getName(), newTask.getDescription(), newTask.getId());
-                        newFileManager.getEpics().put(epic.getId(), epic);
+                        newmanager.getEpics().put(epic.getId(), epic);
                     } else {
                         SimpleTask simpleTask = new SimpleTask(newTask.getName(), newTask.getDescription(), newTask.getId(),
                                 newTask.getStatus(),newTask.getDuration(),newTask.getStartTime());
-                        newFileManager.getSimpleTask().put(simpleTask.getId(), simpleTask);
+                        newmanager.getSimpleTask().put(simpleTask.getId(), simpleTask);
                     }
 
                 }else{
@@ -74,22 +75,22 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
                     List<Integer> newHistory = historyFromString(nextString);
 
                     for (Integer id : newHistory) {
-                        if(newFileManager.getSimpleTask().containsKey(id)) {
-                            newFileManager.getTaskById(id);
-                        }else if(newFileManager.getEpics().containsKey(id)) {
-                            newFileManager.getEpicById(id);
+                        if(newmanager.getSimpleTask().containsKey(id)) {
+                            newmanager.getTaskById(id);
+                        }else if(newmanager.getEpics().containsKey(id)) {
+                            newmanager.getEpicById(id);
                         }else{
-                            newFileManager.getSubTaskById(id);
+                            newmanager.getSubTaskById(id);
                         }
                     }
 
                 }
             }
-            newFileManager.nextId = maxNextId + 1;
+            newmanager.nextId = maxNextId + 1;
         } catch (IOException exc) {
             throw new ManagerSaveException("Ошибка чтения файла");
         }
-        return newFileManager;
+        return newmanager;
     }
     private String toString(Task task) {
         String taskToString = null;
@@ -276,80 +277,5 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         SubTask forReturn = super.getSubTaskById(id);
         save();
         return forReturn;
-    }
-        public static void main(String[] args) throws IOException {
-
-        FileBackedTasksManager fileManager = Managers.getDefaultFileBackedManager();
-        TaskManager manager = Managers.getDefault();
-
-        SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100, Instant.ofEpochSecond(1000));
-        fileManager.addSimpleTask(task1);
-        SimpleTask task2 = new SimpleTask("Приготовить ужин", "Плов", 0, TaskStatus.DONE,100, Instant.ofEpochSecond(8000));
-        fileManager.addSimpleTask(task2);
-        System.out.println(task1.getId() + task1.getName() + task1.getDescription() + task1.getStatus());
-        System.out.println(task2.getId() + task2.getName() + task2.getDescription() + task2.getStatus());
-
-        Epic epic1 = new Epic("сдать экзамен", "сессия в мае ", 0);
-        fileManager.addEpic(epic1);
-
-        System.out.println(epic1.getId() + epic1.getName() + epic1.getDescription() + epic1.getStatus());
-
-        SubTask subTask1 = new SubTask("купить учебник", " в буквоеде скидки ", 0, TaskStatus.NEW,
-                100, Instant.ofEpochSecond(16000),epic1.getId());
-        fileManager.addSubTask(subTask1);
-        System.out.println(subTask1.getId() + subTask1.getName() + subTask1.getDescription() + subTask1.getStatus() + subTask1.getEpicId());
-
-        SubTask subTask2 = new SubTask("скачать вопросник", "ссылка на сайте уника ", 0, TaskStatus.DONE,
-                100, Instant.ofEpochSecond(24000),epic1.getId());
-        fileManager.addSubTask(subTask2);
-        System.out.println(subTask2.getId() + subTask2.getName() + subTask2.getDescription() + subTask2.getStatus() + subTask2.getEpicId());
-        System.out.println(epic1.getStatus());
-
-        SubTask subTask3 = new SubTask("купить прописи", "в буквоеде  ", 0, TaskStatus.DONE,
-                100, Instant.ofEpochSecond(32000),epic1.getId());
-        fileManager.addSubTask(subTask3);
-        System.out.println(subTask3.getId() + subTask3.getName() + subTask3.getDescription() + subTask3.getStatus()
-                + subTask3.getEpicId());
-        System.out.println("Статус эпик 1 " + epic1.getStatus());
-
-        Epic epic2 = new Epic("получить диплом", "через 6 месяцев ", 0);
-        fileManager.addEpic(epic2);
-        System.out.println(epic2.getId() + epic2.getName() + epic2.getDescription() + epic2.getStatus());
-        System.out.println(epic2.getStatus());
-
-        fileManager.getEpicById(3);
-        fileManager.getEpicById(7);
-        fileManager.getSubTaskById(4);
-        fileManager.getSubTaskById(4);
-        fileManager.getSubTaskById(5);
-        fileManager.getTaskById(2);
-
-
-        System.out.println("История просмотров: " + fileManager.getHistory());
-        System.out.println("Сортированный лист: " + fileManager.getPrioritizedTasks());
-
-        FileReader reader = new FileReader(newFile.getName());
-        BufferedReader br = new BufferedReader(reader);
-
-        while (br.ready()) {
-            String line = br.readLine();
-            System.out.println(line);
-        }
-        br.close();
-
-        FileBackedTasksManager newFileManager = fileManager.loadFromFile(newFile);
-        newFileManager.getEpicById(3);
-        newFileManager.getEpicById(7);
-        newFileManager.getTaskById(1);
-
-        System.out.println("История просмотров: " + newFileManager.getHistory());
-
-
-
-      // System.out.println("subtaski: " + newFileManager.getEpicById(3).getSubsId());
-        System.out.println(newFileManager.nextId);
-
-
-
     }
 }

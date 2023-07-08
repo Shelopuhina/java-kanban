@@ -7,13 +7,13 @@ import model.enums.TaskType;
 import java.time.Instant;
 
 public class Task {
-    private String name;
-    private String description;
-    private int id;
-    private TaskStatus status;
-    private TaskType type;
-    private long duration;
-    private Instant startTime;
+    protected String name;
+    protected String description;
+    protected int id;
+    protected TaskStatus status;
+    protected TaskType type;
+    protected long duration;
+    protected Instant startTime;
 
     public Task(String name, String description, int id, TaskStatus status, TaskType type, long duration, Instant startTime) {
         this.name = name;
@@ -21,6 +21,13 @@ public class Task {
         this.id = id;
         this.status = status;
         this.type = type;
+        this.duration = duration;
+        this.startTime = startTime;
+    }
+
+    public Task(String name, String description, long duration, Instant startTime) {
+        this.name = name;
+        this.description = description;
         this.duration = duration;
         this.startTime = startTime;
     }

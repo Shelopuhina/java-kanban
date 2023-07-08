@@ -4,6 +4,7 @@ import Exceptions.TasksIntersectionException;
 import model.*;
 import model.enums.TaskStatus;
 import model.enums.TaskType;
+import utils.Managers;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -31,15 +32,15 @@ public class InMemoryTaskManager implements TaskManager{
     public List<SimpleTask> getListOfSimpleTasks() {
         return new ArrayList<>(simpleTask.values());
     }
-
+    @Override
     public Map<Integer, SimpleTask> getSimpleTask() {
         return simpleTask;
     }
-
+    @Override
     public Map<Integer, Epic> getEpics() {
         return epics;
     }
-
+    @Override
     public Map<Integer, SubTask> getSubTasks() {
         return subTasks;
     }

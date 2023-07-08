@@ -10,8 +10,8 @@ import model.SimpleTask;
 import model.SubTask;
 import model.Task;
 import model.enums.TaskStatus;
-import service.FileBackedTasksManager;
-import service.Managers;
+import utils.Managers;
+import service.TaskManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,28 +30,33 @@ public class HttpTaskServer {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     private static int responseCode = 400;
     private static byte[] response = new byte[0];
-    private static FileBackedTasksManager manager;
-    private static final Gson gson = new Gson();
+    private static TaskManager manager;
+    private static Gson gson;
     private static HttpServer httpServer;
     private static HttpExchange httpExchange;
     private static String path;
     private static URI requestURI;
 
     public HttpTaskServer() throws IOException {
-        this.manager = Managers.getDefaultFileBackedManager();
-        this.httpServer = httpServer.create();
+        this.manager = Managers.getDefault();
+        this.httpServer = HttpServer.create();
+        this.gson = Managers.getGson();
 
-
-       httpServer.bind(new InetSocketAddress(PORT), 0);
+        httpServer.bind(new InetSocketAddress(PORT), 0);
         httpServer.createContext("/tasks", new TasksHandler());
-        httpServer.start(); // запускаем сервер
+    }
 
+    public void start() {
         System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
-
+        System.out.println("http://localhost:"+PORT+"/tasks");
+        httpServer.start();
 
     }
+    public void stop() {
+        httpServer.stop(0);
+        System.out.println("Остановили сервер на порту: "+PORT);
+    }
      static class TasksHandler implements HttpHandler {
-
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -463,6 +468,7 @@ public class HttpTaskServer {
 
 
         HttpTaskServer taskServer = new HttpTaskServer();
+        taskServer.start();
 
         SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100, Instant.ofEpochSecond(1000));
         manager.addSimpleTask(task1);
@@ -470,7 +476,7 @@ public class HttpTaskServer {
         manager.addSimpleTask(task2);
 
 
-        Epic epic1 = new Epic("сдать экзамен", "сессия в мае ", 0);
+        Epic epic1 = new Epic("сдать экзамен", "сессия в мае ");
         manager.addEpic(epic1);
 
         SubTask subTask1 = new SubTask("купить учебник", " в буквоеде скидки ", 0, TaskStatus.NEW,
@@ -478,5 +484,6 @@ public class HttpTaskServer {
         manager.addSubTask(subTask1);
         manager.getTaskById(task1.getId());
         manager.getSubTaskById(subTask1.getId());
+        taskServer.stop();
     }
     }

@@ -31,7 +31,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksM
                     "error creating temporary test file in " +
                             this.getClass().getSimpleName() );
         }
-        taskManager = new FileBackedTasksManager(testFile);
+        taskManager = new FileBackedTasksManager();
     }
 
     @Test

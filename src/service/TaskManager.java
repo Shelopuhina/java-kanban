@@ -8,8 +8,14 @@ import model.Task;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface TaskManager {
+  Map<Integer, SimpleTask> getSimpleTask() ;
+
+  Map<Integer, Epic> getEpics() ;
+
+  Map<Integer, SubTask> getSubTasks();
     List<SimpleTask> getListOfSimpleTasks() throws IOException;
 
 
