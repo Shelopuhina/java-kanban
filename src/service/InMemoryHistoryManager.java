@@ -5,8 +5,8 @@ import model.Task;
 import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private CustomLinkedList<Task> custom = new CustomLinkedList<>();
-    private Map<Integer, Node<Task>> nodes = new HashMap<>();
+    private final CustomLinkedList<Task> custom = new CustomLinkedList<>();
+    private final Map<Integer, Node<Task>> nodes = new HashMap<>();
 
     @Override
     public void addTask(Task task) {

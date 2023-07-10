@@ -1,6 +1,6 @@
 package service;
 
-import Exceptions.ManagerSaveException;
+import exceptions.ManagerSaveException;
 import model.Epic;
 import model.SimpleTask;
 import model.SubTask;
@@ -17,10 +17,14 @@ import java.util.List;
 public class FileBackedTasksManager  extends InMemoryTaskManager implements  TaskManager  {
     private static File newFile = new File("C:\\Users\\T-3000\\dev\\java-kanban\\src\\service", "fileForData.txt");
 
+    public FileBackedTasksManager() {
+    }
 
+    public FileBackedTasksManager(File file) {
+        newFile = file;
+    }
 
-
-    protected void save() throws IOException {
+    protected void save() {
         try (Writer file = new FileWriter(newFile.getName())){
             file.write("id,type,name,status,description,duration,startTime,endTime,epic\n");
             for (SimpleTask simpleTask : getSimpleTask().values()) {
@@ -55,7 +59,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
                         maxNextId = newTask.getId();
                     }
                     String[] split = allStrings.get(i).split(",");
-                    int epicId = 0;
+                    int epicId;
                     if (newTask.getType().equals(TaskType.SUBTASK)) {
                         epicId = Integer.parseInt(split[8]);
                         SubTask subTask = new SubTask(newTask.getName(), newTask.getDescription(), newTask.getId(),
@@ -95,7 +99,7 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         return newmanager;
     }
     private String toString(Task task) {
-        String taskToString = null;
+        String taskToString;
         String taskToString2 = null;
 
         if(task.getType().equals(TaskType.SUBTASK)) {
@@ -129,7 +133,6 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
     }
     private Task fromString (String taskToString) {
         String[] taskInfo = taskToString.split(",");
-        int epicId = 0;
         int id = Integer.parseInt(taskInfo[0]);
         String name = (taskInfo[2]);
         String description = (taskInfo[4]);
@@ -144,17 +147,16 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
         } else if(taskInfo[1].equals(TaskType.SUBTASK.toString())) {
              type = (TaskType.SUBTASK);
         }
-        Task task = new Task(name, description,id, status,type, duration, startTime);
-        return task;
+        return new Task(name, description,id, status,type, duration, startTime);
     }
     private static String historyToString(HistoryManager manager) {
-        String stringHistory = null;
+        String stringHistory;
         List<Task> history= new ArrayList<>(manager.getHistory());
 
         List<String> historyIdString= new ArrayList<>();
         if(!(manager.getHistory().isEmpty())) {
-            for (int i = 0; i < history.size(); i++) {
-                historyIdString.add(String.valueOf(history.get(i).getId()));
+            for (Task task : history) {
+                historyIdString.add(String.valueOf(task.getId()));
             }
             stringHistory = String.join(",",historyIdString);
 
@@ -168,15 +170,14 @@ public class FileBackedTasksManager  extends InMemoryTaskManager implements  Tas
     }
     private static List<Integer> historyFromString(String value) {
         List<Integer> history = new ArrayList<>();
-        if(value.equals("История просмотров пуста")) {
-            return history;
-        } else {
-        String[] split = value.split(",");
-        for (int i = 0; i < split.length; i++) {
-            history.add(Integer.valueOf(split[i]));
+        if (!value.equals("История просмотров пуста")) {
+            String[] split = value.split(",");
+            for (String s : split) {
+                history.add(Integer.valueOf(s));
+            }
         }
-        return  history;
-    }}
+        return history;
+    }
     @Override
     public void deleteAllSimpleTasks() throws IOException {
         super.deleteAllSimpleTasks();

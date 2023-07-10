@@ -10,16 +10,15 @@ import model.SimpleTask;
 import model.SubTask;
 import model.Task;
 import model.enums.TaskStatus;
-import utils.Managers;
+import service.HttpTaskManager;
 import service.TaskManager;
+import utils.Managers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -28,23 +27,14 @@ import java.util.List;
 public class HttpTaskServer {
     private static final int PORT = 8080;
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    private static int responseCode = 400;
-    private static byte[] response = new byte[0];
-    private static TaskManager manager;
-    private static Gson gson;
-    private static HttpServer httpServer;
-    private static HttpExchange httpExchange;
-    private static String path;
-    private static URI requestURI;
+    private  int responseCode = 400;
+    private  byte[] response = new byte[0];
+    private final TaskManager manager;
+    private final Gson gson;
+    private final HttpServer httpServer;
+    private  HttpExchange httpExchange;
 
-    public HttpTaskServer() throws IOException {
-        this.manager = Managers.getDefault();
-        this.httpServer = HttpServer.create();
-        this.gson = Managers.getGson();
 
-        httpServer.bind(new InetSocketAddress(PORT), 0);
-        httpServer.createContext("/tasks", new TasksHandler());
-    }
     public HttpTaskServer(TaskManager manager) throws IOException {
         this.manager = manager;
         this.httpServer = HttpServer.create();
@@ -64,15 +54,15 @@ public class HttpTaskServer {
         httpServer.stop(0);
         System.out.println("Остановили сервер на порту: "+PORT);
     }
-     static class TasksHandler implements HttpHandler {
+      class TasksHandler implements HttpHandler {
 
         @Override
-        public void handle(HttpExchange exchange) throws IOException {
+        public void handle(HttpExchange exchange) {
             httpExchange = exchange;
 
             String method = exchange.getRequestMethod();
-            requestURI = exchange.getRequestURI();
-            path = requestURI.getPath();
+            URI requestURI = exchange.getRequestURI();
+            String path = requestURI.getPath();
             System.out.println("Путь: " + path);
             String[] splitStrings = path.split("/");
             System.out.println(splitStrings.length);
@@ -90,7 +80,7 @@ public class HttpTaskServer {
                            break;
                        }
                        if (splitStrings[2].equals("task") && (requestURI.getQuery().contains("id"))) {
-                           getSimpleTaskByID();
+                           getSimpleTaskByID(httpExchange);
                            break;
                        }
                        if (splitStrings[2].equals("epic") && path.endsWith("epic")) {
@@ -98,7 +88,7 @@ public class HttpTaskServer {
                            break;
                        }
                        if (splitStrings[2].equals("epic")&& (requestURI.getQuery().contains("id"))) {
-                           getEpicById();
+                           getEpicById(httpExchange);
                            break;
                        }
                        if (splitStrings[2].equals("subtask") && path.endsWith("subtask")) {
@@ -106,11 +96,11 @@ public class HttpTaskServer {
                            break;
                        }
                        if (splitStrings[2].equals("subtask") && (!path.contains("epic")) && (requestURI.getQuery().contains("id"))) {
-                           getSubTaskById();
+                           getSubTaskById(httpExchange);
                            break;
                        }
                        if (splitStrings[2].equals("subtask") && path.contains("epic")) {
-                           getListOfSubsOfEpics();
+                           getListOfSubsOfEpics(httpExchange);
                            break;
                        }
                        if (splitStrings[2].equals("history")) {
@@ -132,10 +122,10 @@ public class HttpTaskServer {
                        break;
                    }
                    case "DELETE": {
-                       if (splitStrings.length >= 3  && (requestURI.getQuery().contains("id"))) {
-                           deleteAnyTaskById();
+                       if ((!(requestURI.getQuery() ==null)) && requestURI.getQuery().contains("id")) {
+                           deleteAnyTaskById(httpExchange);
                        }
-                       if (splitStrings[2].equals("task") && (!requestURI.getQuery().contains("id"))) {
+                       if (splitStrings[2].equals("task") && path.endsWith("task")) {
                            deleteAllSimpleTasks();
                        }
                        if (splitStrings[2].equals("epic") && path.endsWith("epic")) {
@@ -167,14 +157,8 @@ public class HttpTaskServer {
         }
         private void getAllSimpleTasks() throws IOException, InterruptedException {
             System.out.println("Началась обработка /tasks/task/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/task/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             List<SimpleTask> tasks = manager.getListOfSimpleTasks();
             String jsonList = gson.toJson(tasks);
-
 
             if (!jsonList.isEmpty()) {
                 response = jsonList.getBytes(DEFAULT_CHARSET);
@@ -185,11 +169,6 @@ public class HttpTaskServer {
         }
         private void getAllEpics() throws IOException, InterruptedException {
             System.out.println("Началась обработка /tasks/epic/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/epic/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             List<Epic> epics = manager.getListOfEpics();
             String jsonList = gson.toJson(epics);
 
@@ -203,14 +182,8 @@ public class HttpTaskServer {
         }
         private void getAllSubTasks() throws IOException, InterruptedException {
             System.out.println("Началась обработка /tasks/subtask/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/subtask/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             List<SubTask> subtasks = manager.getListOfsubTasks();
             String jsonList = gson.toJson(subtasks);
-
 
             if (!jsonList.isEmpty()) {
                 response = jsonList.getBytes(DEFAULT_CHARSET);
@@ -219,16 +192,12 @@ public class HttpTaskServer {
                 responseCode = 400;
             }
         }
-        private void getSimpleTaskByID() throws IOException, InterruptedException {
+        private void getSimpleTaskByID(HttpExchange exchange) throws IOException, InterruptedException {
+            URI requestURI = exchange.getRequestURI();
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
             int id = Integer.parseInt(getId.substring(index+1));
             System.out.println("Началась обработка /tasks/task/?id="+id+"запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/task/?id="+id);
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             SimpleTask task = manager.getTaskById(id);
             String jsonString = gson.toJson(task);
 
@@ -239,16 +208,12 @@ public class HttpTaskServer {
                 responseCode = 400;
             }
         }
-        private void getEpicById() throws IOException {
+        private void getEpicById(HttpExchange exchange) throws IOException {
+            URI requestURI = exchange.getRequestURI();
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
             int id = Integer.parseInt(getId.substring(index+1));
             System.out.println("Началась обработка /tasks/epic/?id="+id+"запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/epic/?id="+id);
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             Epic epic = manager.getEpicById(id);
             String jsonString = gson.toJson(epic);
 
@@ -259,16 +224,12 @@ public class HttpTaskServer {
                 responseCode = 400;
             }
         }
-        private void getSubTaskById() throws IOException {
+        private void getSubTaskById(HttpExchange exchange) throws IOException {
+            URI requestURI = exchange.getRequestURI();
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
             int id = Integer.parseInt(getId.substring(index+1));
             System.out.println("Началась обработка /tasks/subtask/?id="+id+"запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/subtask/?id="+id);
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             SubTask sub = manager.getSubTaskById(id);
             String jsonString = gson.toJson(sub);
 
@@ -279,20 +240,15 @@ public class HttpTaskServer {
                 responseCode = 400;
             }
         }
-        private void getListOfSubsOfEpics() {
+        private void getListOfSubsOfEpics(HttpExchange exchange) {
+            URI requestURI = exchange.getRequestURI();
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
             int id = Integer.parseInt(getId.substring(index+1));
             System.out.println("Началась обработка /tasks/subtask/epic/?id="+id+"запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/subtask/epic/?id="+id);
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             Epic epic = manager.getEpics().get(id);
             List<SubTask> subsId = manager.getListOfSubsOfEpic(epic);
             String jsonList = gson.toJson(subsId);
-
 
             if (!jsonList.isEmpty()) {
                 response = jsonList.getBytes(DEFAULT_CHARSET);
@@ -303,14 +259,8 @@ public class HttpTaskServer {
         }
         private void getHistory() throws IOException {
             System.out.println("Началась обработка /tasks/history/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/history/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             List<Task> tasks = manager.getHistory();
             String jsonList = gson.toJson(tasks);
-
 
             if (!jsonList.isEmpty()) {
                 response = jsonList.getBytes(DEFAULT_CHARSET);
@@ -321,14 +271,8 @@ public class HttpTaskServer {
         }
         private void getPrioritizedTasks() throws IOException {
             System.out.println("Началась обработка /tasks/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-
             List<Task> tasks = manager.getPrioritizedTasks();
             String jsonList = gson.toJson(tasks);
-
 
             if (!jsonList.isEmpty()) {
                 response = jsonList.getBytes(DEFAULT_CHARSET);
@@ -389,11 +333,6 @@ public class HttpTaskServer {
         }
         private void deleteAllSimpleTasks() throws IOException {
             System.out.println("Началась обработка /tasks/task/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/task/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
-
             manager.deleteAllSimpleTasks();
 
             if (manager.getSimpleTask().isEmpty()) {
@@ -404,11 +343,6 @@ public class HttpTaskServer {
         }
         private void deleteAllEpics() throws IOException {
             System.out.println("Началась обработка /tasks/epic/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/epic/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
-
             manager.deleteAllEpics();
 
             if (manager.getEpics().isEmpty()) {
@@ -419,11 +353,6 @@ public class HttpTaskServer {
         }
         private void deleteAllSubTasks() throws IOException {
             System.out.println("Началась обработка /tasks/subtask/ запроса от клиента.");
-
-            HttpClient client = HttpClient.newHttpClient();
-            URI url = URI.create("http://localhost:8080/tasks/subtask/");
-            HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
-
             manager.deleteAllSubTasks();
 
             if (manager.getSubTasks().isEmpty()) {
@@ -432,34 +361,25 @@ public class HttpTaskServer {
                 responseCode = 400;
             }
         }
-        private void deleteAnyTaskById() throws IOException {
+        private void deleteAnyTaskById(HttpExchange exchange) throws IOException {
+            URI requestURI = exchange.getRequestURI();
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
             int id = Integer.parseInt(getId.substring(index+1));
             if (manager.getSimpleTask().containsKey(id)) {
                 System.out.println("Началась обработка /tasks/task/?id="+id+"запроса от клиента.");
 
-                HttpClient client = HttpClient.newHttpClient();
-                URI url = URI.create("http://localhost:8080/tasks/task/?id="+id);
-                HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
                 manager.deleteSimpleTaskById(id);
                 System.out.println("Задача удалена");
             }
             if (manager.getEpics().containsKey(id)) {
                 System.out.println("Началась обработка /tasks/epic/?id="+id+"запроса от клиента.");
 
-                HttpClient client = HttpClient.newHttpClient();
-                URI url = URI.create("http://localhost:8080/tasks/epic/?id="+id);
-                HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
                 manager.deleteEpicById(id);
                 System.out.println("Эпик удален");
             }
             if (manager.getSubTasks().containsKey(id)) {
                 System.out.println("Началась обработка /tasks/subtask/?id=" + id + "запроса от клиента.");
-
-                HttpClient client = HttpClient.newHttpClient();
-                URI url = URI.create("http://localhost:8080/tasks/subtask/?id=" + id);
-                HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
 
                 manager.deleteSubTaskById(id);
                 System.out.println("Сабтаск удален");
@@ -469,10 +389,9 @@ public class HttpTaskServer {
         }
 
     public static void main(String[] args) throws IOException {
-
-        HttpTaskServer taskServer = new HttpTaskServer();
+        HttpTaskManager manager = new HttpTaskManager("http://localhost:8078");
+        HttpTaskServer taskServer = new HttpTaskServer(manager);
         taskServer.start();
-
        SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100, Instant.ofEpochSecond(1000));
         manager.addSimpleTask(task1);
         SimpleTask task2 = new SimpleTask("Собрать коробки2", "Для переезда2", 0, TaskStatus.DONE,100, Instant.ofEpochSecond(80000));

@@ -1,6 +1,6 @@
 package service;
 
-import Exceptions.TasksIntersectionException;
+import exceptions.TasksIntersectionException;
 import model.*;
 import model.enums.TaskStatus;
 import model.enums.TaskType;
@@ -179,7 +179,7 @@ public class InMemoryTaskManager implements TaskManager{
         }
     }
     public TaskStatus updateEpicStatus(Epic epic) {
-        TaskStatus epicStatus = null;
+        TaskStatus epicStatus;
         int countNew = 0;
         int countDone = 0;
 

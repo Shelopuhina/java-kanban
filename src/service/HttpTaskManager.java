@@ -2,6 +2,7 @@ package service;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import exceptions.ManagerSaveException;
 import model.Epic;
 import model.SimpleTask;
 import model.SubTask;
@@ -27,18 +28,21 @@ public class HttpTaskManager extends FileBackedTasksManager{
     }
 
     @Override
-    protected void save() throws IOException {
-        String tasks = gson.toJson(getSimpleTask());
-        client.put("tasks/task", tasks);
-
-        String epics = gson.toJson(getEpics());
-        client.put("tasks/epic", epics);
-        String subtasks = gson.toJson(getSubTasks());
-        client.put("tasks/subtask", subtasks);
-        String prioritizedTasks = gson.toJson(getPrioritizedTasks());
-        client.put("tasks", prioritizedTasks);
-        String history = gson.toJson(getHistory());
-        client.put("tasks/history", history);
+    protected void save() {
+        try {
+            String tasks = gson.toJson(getSimpleTask());
+            client.put("tasks/task", tasks);
+            String epics = gson.toJson(getEpics());
+            client.put("tasks/epic", epics);
+            String subtasks = gson.toJson(getSubTasks());
+            client.put("tasks/subtask", subtasks);
+            String prioritizedTasks = gson.toJson(getPrioritizedTasks());
+            client.put("tasks", prioritizedTasks);
+            String history = gson.toJson(getHistory());
+            client.put("tasks/history", history);
+        } catch (IOException exc) {
+            throw new ManagerSaveException("Ошибка сохранения :" + exc.getMessage());
+        }
     }
 
     public void load() throws IOException {

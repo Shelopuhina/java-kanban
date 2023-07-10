@@ -25,9 +25,9 @@ public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksM
     @TempDir
     Path tempDir;
     File testFile;
-    private FileBackedTasksManager fileManager;
+
     @BeforeEach
-     void beforeEach() throws IOException {
+     void beforeEach()  {
         try {
             testFile = tempDir.resolve("fileForTest.txt").toFile();
         }
@@ -73,6 +73,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksM
 
     @Test
     public void saveEmpty() throws IOException {
+        taskManager = new FileBackedTasksManager(testFile);
         SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW, 100,Instant.ofEpochSecond(1000));
         taskManager.addSimpleTask(task1);
         Epic epic1 = new Epic("name1", "description1", 0);
@@ -99,6 +100,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksM
 
     @Test
     public void testLoadFromFile() throws IOException {
+        taskManager = new FileBackedTasksManager(testFile);
         SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100,Instant.ofEpochSecond(1000));
         taskManager.addSimpleTask(task1);
         Epic epic1 = new Epic("name1", "description1", 0);
@@ -113,6 +115,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest <FileBackedTasksM
     }
     @Test
     public void loadFromFileTest() throws IOException {
+        taskManager = new FileBackedTasksManager(testFile);
         SimpleTask task1 = new SimpleTask("Собрать коробки", "Для переезда", 0, TaskStatus.NEW,100,Instant.ofEpochSecond(1000));
         taskManager.addSimpleTask(task1);
         Epic epic1 = new Epic("name1", "description1", 0);

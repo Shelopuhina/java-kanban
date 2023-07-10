@@ -1,4 +1,4 @@
-package Exceptions;
+package exceptions;
 
 public class TasksIntersectionException  extends RuntimeException{
     public TasksIntersectionException(String message) {
