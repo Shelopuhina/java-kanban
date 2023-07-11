@@ -16,25 +16,17 @@ import utils.Managers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 
 public class HttpTaskServer {
-    private static final int PORT = 8080;
-    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    private  int responseCode = 400;
-    private  byte[] response = new byte[0];
+    public static final int PORT = 8080;
     private final TaskManager manager;
     private final Gson gson;
     private final HttpServer httpServer;
-    private  HttpExchange httpExchange;
-
-
     public HttpTaskServer(TaskManager manager) throws IOException {
         this.manager = manager;
         this.httpServer = HttpServer.create();
@@ -58,81 +50,76 @@ public class HttpTaskServer {
 
         @Override
         public void handle(HttpExchange exchange) {
-            httpExchange = exchange;
-
-            String method = exchange.getRequestMethod();
-            URI requestURI = exchange.getRequestURI();
-            String path = requestURI.getPath();
+            final String method = exchange.getRequestMethod();
+            final URI requestURI = exchange.getRequestURI();
+            final String path = requestURI.getPath();
             System.out.println("Путь: " + path);
             String[] splitStrings = path.split("/");
-            System.out.println(splitStrings.length);
-
-
-           try {
+            try {
                switch (method) {
                    case "GET": {
                        if (path.endsWith("/tasks/")) {
-                           getPrioritizedTasks();
+                           getPrioritizedTasks(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("task") && path.endsWith("task")) {
-                           getAllSimpleTasks();
+                           getAllSimpleTasks(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("task") && (requestURI.getQuery().contains("id"))) {
-                           getSimpleTaskByID(httpExchange);
+                           getSimpleTaskByID(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("epic") && path.endsWith("epic")) {
-                           getAllEpics();
+                           getAllEpics(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("epic")&& (requestURI.getQuery().contains("id"))) {
-                           getEpicById(httpExchange);
+                           getEpicById(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("subtask") && path.endsWith("subtask")) {
-                           getAllSubTasks();
+                           getAllSubTasks(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("subtask") && (!path.contains("epic")) && (requestURI.getQuery().contains("id"))) {
-                           getSubTaskById(httpExchange);
+                           getSubTaskById(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("subtask") && path.contains("epic")) {
-                           getListOfSubsOfEpics(httpExchange);
+                           getListOfSubsOfEpics(exchange);
                            break;
                        }
                        if (splitStrings[2].equals("history")) {
-                           getHistory();
+                           getHistory(exchange);
                            break;
                        }
 
                    }
                    case "POST": {
                        if (splitStrings[2].equals("task") && path.endsWith("task")) {
-                           handlePostSimpleTask();
+                           handlePostSimpleTask(exchange);
                        }
                        if (splitStrings[2].equals("epic") && path.endsWith("epic")) {
-                           handlePostEpic();
+                           handlePostEpic(exchange);
                        }
                        if (splitStrings[2].equals("subtask") && path.endsWith("subtask")) {
-                           handlePostSubTask();
+                           handlePostSubTask(exchange);
                        }
                        break;
                    }
                    case "DELETE": {
                        if ((!(requestURI.getQuery() ==null)) && requestURI.getQuery().contains("id")) {
-                           deleteAnyTaskById(httpExchange);
+                           deleteAnyTaskById(exchange);
                        }
                        if (splitStrings[2].equals("task") && path.endsWith("task")) {
-                           deleteAllSimpleTasks();
+                           deleteAllSimpleTasks(exchange);
                        }
                        if (splitStrings[2].equals("epic") && path.endsWith("epic")) {
-                           deleteAllEpics();
+                           deleteAllEpics(exchange);
                        }
                        if (splitStrings[2].equals("subtask") && path.endsWith("subtask")) {
-                           deleteAllSubTasks();
+                           deleteAllSubTasks(exchange);
                        }
 
                        break;
@@ -140,56 +127,46 @@ public class HttpTaskServer {
                    default:
                        System.out.println("Метод " + method + "не поддерживается");
                }
-               Headers headers = httpExchange.getResponseHeaders();
-               headers.set("Content-type","application/json");
+               Headers headers = exchange.getResponseHeaders();
                headers.set("Accept", "application/json");
-               exchange.sendResponseHeaders(responseCode, response.length);
-               try (OutputStream os = exchange.getResponseBody()) {
-                   os.write(response);
-               }
            }catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
                System.out.println("Во время выполнения запроса ресурса возникла ошибка.\n" +
                        "Проверьте, пожалуйста, адрес и повторите попытку.");
-
            }
             exchange.close();
 
         }
-        private void getAllSimpleTasks() throws IOException, InterruptedException {
-            System.out.println("Началась обработка /tasks/task/ запроса от клиента.");
-            List<SimpleTask> tasks = manager.getListOfSimpleTasks();
-            String jsonList = gson.toJson(tasks);
+          private void sendText(HttpExchange h, String text) throws IOException {
+                byte[] resp = text.getBytes(StandardCharsets.UTF_8);
+                h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+                h.sendResponseHeaders(200, resp.length);
+                h.getResponseBody().write(resp);
+          }
+          private void getAllSimpleTasks(HttpExchange exchange) throws IOException, InterruptedException {
+              System.out.println("Началась обработка /tasks/task/ запроса от клиента.");
+              List<SimpleTask> tasks = manager.getListOfSimpleTasks();
+              String jsonList = gson.toJson(tasks);
 
-            if (!jsonList.isEmpty()) {
-                response = jsonList.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
-            }
-        }
-        private void getAllEpics() throws IOException, InterruptedException {
+              if (!jsonList.isEmpty()) {
+                  sendText(exchange, jsonList);
+              }
+          }
+        private void getAllEpics(HttpExchange exchange) throws IOException, InterruptedException {
             System.out.println("Началась обработка /tasks/epic/ запроса от клиента.");
             List<Epic> epics = manager.getListOfEpics();
             String jsonList = gson.toJson(epics);
 
             if (!jsonList.isEmpty()) {
-                response = jsonList.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonList);
             }
-
         }
-        private void getAllSubTasks() throws IOException, InterruptedException {
+        private void getAllSubTasks(HttpExchange exchange) throws IOException, InterruptedException {
             System.out.println("Началась обработка /tasks/subtask/ запроса от клиента.");
             List<SubTask> subtasks = manager.getListOfsubTasks();
             String jsonList = gson.toJson(subtasks);
 
             if (!jsonList.isEmpty()) {
-                response = jsonList.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonList);
             }
         }
         private void getSimpleTaskByID(HttpExchange exchange) throws IOException, InterruptedException {
@@ -202,10 +179,7 @@ public class HttpTaskServer {
             String jsonString = gson.toJson(task);
 
             if (!jsonString.isEmpty()) {
-                response = jsonString.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonString);
             }
         }
         private void getEpicById(HttpExchange exchange) throws IOException {
@@ -218,10 +192,7 @@ public class HttpTaskServer {
             String jsonString = gson.toJson(epic);
 
             if (!jsonString.isEmpty()) {
-                response = jsonString.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonString);
             }
         }
         private void getSubTaskById(HttpExchange exchange) throws IOException {
@@ -234,13 +205,10 @@ public class HttpTaskServer {
             String jsonString = gson.toJson(sub);
 
             if (!jsonString.isEmpty()) {
-                response = jsonString.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonString);
             }
         }
-        private void getListOfSubsOfEpics(HttpExchange exchange) {
+        private void getListOfSubsOfEpics(HttpExchange exchange) throws IOException {
             URI requestURI = exchange.getRequestURI();
             String getId = requestURI.getQuery();
             int index = getId.indexOf("=");
@@ -251,114 +219,112 @@ public class HttpTaskServer {
             String jsonList = gson.toJson(subsId);
 
             if (!jsonList.isEmpty()) {
-                response = jsonList.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonList);
             }
         }
-        private void getHistory() throws IOException {
+        private void getHistory(HttpExchange exchange) throws IOException {
             System.out.println("Началась обработка /tasks/history/ запроса от клиента.");
             List<Task> tasks = manager.getHistory();
             String jsonList = gson.toJson(tasks);
 
             if (!jsonList.isEmpty()) {
-                response = jsonList.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonList);
             }
         }
-        private void getPrioritizedTasks() throws IOException {
+        private void getPrioritizedTasks(HttpExchange exchange) throws IOException {
             System.out.println("Началась обработка /tasks/ запроса от клиента.");
             List<Task> tasks = manager.getPrioritizedTasks();
             String jsonList = gson.toJson(tasks);
 
             if (!jsonList.isEmpty()) {
-                response = jsonList.getBytes(DEFAULT_CHARSET);
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                sendText(exchange, jsonList);
             }
         }
-        private void handlePostSimpleTask() throws IOException {
+        private void handlePostSimpleTask(HttpExchange exchange) throws IOException {
             System.out.println("POST: началась обработка /tasks/task запроса от клиента.\n");
 
-            InputStream inputStream = httpExchange.getRequestBody();
-            String body = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+            InputStream inputStream = exchange.getRequestBody();
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             SimpleTask task = gson.fromJson(body, SimpleTask.class);
-            responseCode = 200;
 
             if (!manager.getSimpleTask().containsKey(task.getId())) {
                 manager.addSimpleTask(task);
                 String newResponse = "Задача " + task.getName() +" добавлена " + "\n" + body;
-                response = newResponse.getBytes(DEFAULT_CHARSET);
+                sendText(exchange, newResponse);
             } else {
                 manager.updateSimpleTask(task);
                 String newResponse = "Задача " + task.getName() +" обновлена " + "\n" + body;
-                response = newResponse.getBytes(DEFAULT_CHARSET);
+                sendText(exchange, newResponse);
             }
         }
-        private void handlePostEpic() throws IOException {
+        private void handlePostEpic(HttpExchange exchange) throws IOException {
             System.out.println("POST: началась обработка /tasks/epic запроса от клиента.\n");
 
-            InputStream inputStream = httpExchange.getRequestBody();
-            String body = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+            InputStream inputStream = exchange.getRequestBody();
+            String body = new String(inputStream.readAllBytes(),  StandardCharsets.UTF_8);
             Epic epic = gson.fromJson(body, Epic.class);
-            responseCode = 200;
 
             if (!manager.getEpics().containsKey(epic.getId())) {
                 manager.addEpic(epic);
-                System.out.println("Добавлен новый эпик " + epic.getName() + "\n" + body);
+                String newResponse = "Добавлен новый эпик " + epic.getName() + "\n" + body;
+                sendText(exchange, newResponse);
             } else {
                 manager.updateEpic(epic);
-                System.out.println("Эпик с id=" + epic.getId() + " обновлен.\n" + body);
+                String newResponse = "Эпик с id=" + epic.getId() + " обновлен.\n" + body;
+                sendText(exchange, newResponse);
             }
         }
-        private void handlePostSubTask() throws IOException {
+        private void handlePostSubTask(HttpExchange exchange) throws IOException {
             System.out.println("POST: началась обработка /tasks/subtask запроса от клиента.\n");
 
-            InputStream inputStream = httpExchange.getRequestBody();
-            String body = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+            InputStream inputStream = exchange.getRequestBody();
+            String body = new String(inputStream.readAllBytes(),  StandardCharsets.UTF_8);
             SubTask subtask = gson.fromJson(body, SubTask.class);
-            responseCode = 200;
 
             if (!manager.getSubTasks().containsKey(subtask.getId())) {
                 manager.addSubTask(subtask);
-                System.out.println("Добавлен новый сабтаск " + subtask.getName() + "\n" + body);
+                String newResponse = "Добавлен новый сабтаск " + subtask.getName() + "\n" + body;
+                sendText(exchange, newResponse);
             } else {
                 manager.updateSubTask(subtask);
-                System.out.println("Сабтаск с id=" + subtask.getId() + " обновлен.\n" + body);
+                String newResponse = "Сабтаск с id=" + subtask.getId() + " обновлен.\n" + body;
+                sendText(exchange, newResponse);
             }
         }
-        private void deleteAllSimpleTasks() throws IOException {
+        private void deleteAllSimpleTasks(HttpExchange exchange) throws IOException {
             System.out.println("Началась обработка /tasks/task/ запроса от клиента.");
             manager.deleteAllSimpleTasks();
 
             if (manager.getSimpleTask().isEmpty()) {
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                System.out.println("Все задачи удалены.");
+                byte[] resp = new byte[0];
+                exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+                exchange.sendResponseHeaders(200, resp.length);
+                exchange.getResponseBody().write(resp);
             }
         }
-        private void deleteAllEpics() throws IOException {
+        private void deleteAllEpics(HttpExchange exchange) throws IOException {
             System.out.println("Началась обработка /tasks/epic/ запроса от клиента.");
             manager.deleteAllEpics();
 
             if (manager.getEpics().isEmpty()) {
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                System.out.println("Все эпики удалены.");
+                byte[] resp = new byte[0];
+                exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+                exchange.sendResponseHeaders(200, resp.length);
+                exchange.getResponseBody().write(resp);
             }
         }
-        private void deleteAllSubTasks() throws IOException {
+        private void deleteAllSubTasks(HttpExchange exchange) throws IOException {
             System.out.println("Началась обработка /tasks/subtask/ запроса от клиента.");
             manager.deleteAllSubTasks();
 
             if (manager.getSubTasks().isEmpty()) {
-                responseCode = 200;
-            }else{
-                responseCode = 400;
+                System.out.println("Все сабтаски удалены.");
+                byte[] resp = new byte[0];
+                exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+                exchange.sendResponseHeaders(200, resp.length);
+                exchange.getResponseBody().write(resp);
             }
         }
         private void deleteAnyTaskById(HttpExchange exchange) throws IOException {
@@ -384,7 +350,10 @@ public class HttpTaskServer {
                 manager.deleteSubTaskById(id);
                 System.out.println("Сабтаск удален");
             }
-                responseCode = 200;
+            byte[] resp = new byte[0];
+            exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+            exchange.sendResponseHeaders(200, resp.length);
+            exchange.getResponseBody().write(resp);
         }
         }
 
